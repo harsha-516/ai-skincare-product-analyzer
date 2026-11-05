@@ -8,3 +8,4 @@ Thumbs.db
 .pytest_cache/
 data/*.tmp
 .tmp_pages/
+.venv-render-test/

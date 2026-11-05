@@ -65,21 +65,30 @@ Open http://localhost:8000. The API docs are at http://localhost:8000/api/docs.
 ### Refresh prices, rebuild the data, evaluation and tests
 
 ```bash
-python pipeline/fetch_brands.py # brand stores → data/raw/brands/ (polite: about 20–40 minutes)
+pip install -r requirements-dev.txt
+python pipeline/fetch_brands.py # brand stores → data/raw/brands/ (polite, takes a while)
 python pipeline/build_data.py   # raw data → data/skincare.db, data/processed/*.csv, report/data_audit.md
 python eval/run_eval.py         # 20 personas → report/evaluation.md, report/evaluation.json
 python -m pytest                # API and recommender tests
 ```
 
-## Deploying
+`requirements.txt` holds only what the website server needs. `requirements-dev.txt` adds the
+data pipeline and test tools.
 
-The site needs a server for the API, so GitHub Pages alone can't host it. Any Python host works. The start command is:
+## Deploying (Render, free plan)
 
-```bash
-uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT
-```
+The repository includes [`render.yaml`](render.yaml), so Render can set everything up.
 
-To host the frontend on a different domain from the API, set `ALLOWED_ORIGINS` (comma-separated) on the backend.
+1. Sign in at https://render.com with your GitHub account.
+2. Click **New +**, then **Blueprint**, and pick this repository.
+3. Click **Apply**. Render installs `requirements.txt` and starts
+   `uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT`.
+4. When the deploy shows **Live**, the site is at `https://skinanalyzer.onrender.com` (or a similar
+   name Render assigns). Every push to `main` redeploys automatically.
+
+On the free plan the server sleeps after about 15 minutes without visitors; the first visit after
+that takes up to a minute to wake it. To host the frontend on a different domain from the API, set
+`ALLOWED_ORIGINS` (comma-separated) on the backend.
 
 ## Data (all real and public)
 
