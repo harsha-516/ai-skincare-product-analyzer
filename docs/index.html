@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SkinAnalyzer — ingredient-aware skincare recommendations</title>
+  <meta name="description" content="A student prototype that matches skincare products to your skin profile, ingredient restrictions and budget, and explains every recommendation.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='10' y='4' width='12' height='6' rx='2' fill='%239a5137'/%3E%3Crect x='7' y='10' width='18' height='19' rx='6' fill='%23b9684a'/%3E%3C/svg%3E">
+</head>
+<body>
+<main>
+  <div class="wrap">
+    <section class="hero">
+      <div>
+        <div class="eyebrow">AI Skincare Product Analyzer</div>
+        <h1 style="margin-top:14px">Skincare that reads the label, not the hype.</h1>
+        <p class="lead">Tell us about your skin, your budget and what you react to. We check
+          <span data-stat="products">1,800+</span> real product ingredient lists, remove anything that breaks your rules,
+          and explain why each product made the list.</p>
+        <div class="row">
+          <a class="btn btn-primary" href="analyze.html">Analyse my skin</a>
+          <a class="btn" href="products.html">Browse products</a>
+        </div>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <svg viewBox="0 0 400 500" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#efdccb"/><stop offset="1" stop-color="#d9b59a"/>
+            </linearGradient>
+            <linearGradient id="glass" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#f6e7da"/><stop offset=".55" stop-color="#fff7ef"/><stop offset="1" stop-color="#e8cdb8"/>
+            </linearGradient>
+            <linearGradient id="amber" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#9a5137"/><stop offset=".5" stop-color="#c47b5a"/><stop offset="1" stop-color="#8a4630"/>
+            </linearGradient>
+            <linearGradient id="jar" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#e9d3c1"/><stop offset=".5" stop-color="#fbf1e7"/><stop offset="1" stop-color="#dcbca5"/>
+            </linearGradient>
+          </defs>
+          <rect width="400" height="500" fill="url(#bg)"/>
+          <circle cx="300" cy="120" r="90" fill="#f6e6d7" opacity=".6"/>
+          <path d="M60 70 C 70 150, 40 230, 66 300" stroke="#b28a6c" stroke-width="2" fill="none" opacity=".5"/>
+          <g fill="#b28a6c" opacity=".55">
+            <ellipse cx="72" cy="100" rx="10" ry="4" transform="rotate(-30 72 100)"/>
+            <ellipse cx="54" cy="140" rx="10" ry="4" transform="rotate(30 54 140)"/>
+            <ellipse cx="70" cy="180" rx="10" ry="4" transform="rotate(-30 70 180)"/>
+            <ellipse cx="52" cy="220" rx="10" ry="4" transform="rotate(30 52 220)"/>
+            <ellipse cx="68" cy="260" rx="10" ry="4" transform="rotate(-30 68 260)"/>
+          </g>
+          <rect x="0" y="400" width="400" height="100" fill="#c89b7d"/>
+          <rect x="0" y="396" width="400" height="8" fill="#d8b094"/>
+          <!-- dropper bottle -->
+          <rect x="146" y="150" width="28" height="70" rx="6" fill="#3a2a20"/>
+          <rect x="140" y="214" width="40" height="16" rx="4" fill="#4a362a"/>
+          <rect x="120" y="226" width="80" height="176" rx="18" fill="url(#amber)"/>
+          <rect x="132" y="290" width="56" height="60" rx="6" fill="#f7ebe0" opacity=".9"/>
+          <rect x="140" y="304" width="40" height="4" rx="2" fill="#9a5137"/>
+          <rect x="140" y="314" width="30" height="3" rx="1.5" fill="#c9a58c"/>
+          <rect x="140" y="322" width="34" height="3" rx="1.5" fill="#c9a58c"/>
+          <!-- tall bottle -->
+          <rect x="238" y="168" width="30" height="34" rx="6" fill="#e9d4c3"/>
+          <rect x="224" y="198" width="58" height="204" rx="20" fill="url(#glass)"/>
+          <rect x="236" y="270" width="34" height="70" rx="6" fill="#efd9c7"/>
+          <rect x="242" y="284" width="22" height="4" rx="2" fill="#b9684a"/>
+          <!-- jar -->
+          <rect x="268" y="334" width="96" height="22" rx="8" fill="#e2c6b0"/>
+          <rect x="262" y="352" width="108" height="52" rx="14" fill="url(#jar)"/>
+          <!-- tube -->
+          <path d="M40 404 L 52 304 L 100 304 L 112 404 Z" fill="#f4e4d6"/>
+          <rect x="48" y="294" width="56" height="12" rx="3" fill="#d8b49a"/>
+          <rect x="62" y="340" width="28" height="4" rx="2" fill="#b9684a"/>
+        </svg>
+      </div>
+    </section>
+  </div>
+
+  <section class="section section-warm">
+    <div class="wrap">
+      <h2>How it works</h2>
+      <div class="grid grid-3" style="margin-top:24px">
+        <div class="card stack">
+          <div class="step-num">01</div>
+          <h3>Tell us about your skin</h3>
+          <p class="muted small">Skin type, sensitivity, the concerns that bother you most, your budget and
+            any ingredient you avoid. A photo cannot tell us any of this, so the questionnaire comes first.</p>
+        </div>
+        <div class="card stack">
+          <div class="step-num">02</div>
+          <h3>Hard rules filter first</h3>
+          <p class="muted small">Out of budget, wrong category, or contains something you avoid? The product is removed
+            before scoring, and no high score can bring it back.</p>
+        </div>
+        <div class="card stack">
+          <div class="step-num">03</div>
+          <h3>Ranked, with reasons</h3>
+          <p class="muted small">What is left is scored on your concerns, preferred ingredients, skin type and budget.
+            Every result tells you, in plain words, why it is there.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <h2>Built on real data, not made-up lists</h2>
+      <div class="grid grid-4" style="margin-top:24px">
+        <div class="card"><div class="stat" data-stat="products">—</div><p class="muted small" style="margin-top:8px">face-care products with real prices and ingredient lists (Sephora US catalogue)</p></div>
+        <div class="card"><div class="stat" data-stat="ingredients">—</div><p class="muted small" style="margin-top:8px">distinct ingredients, each matched to the EU CosIng database</p></div>
+        <div class="card"><div class="stat" data-stat="match">—</div><p class="muted small" style="margin-top:8px">of ingredient tokens mapped to a reference entry</p></div>
+        <div class="card"><div class="stat" data-stat="violations">—</div><p class="muted small" style="margin-top:8px">of recommendations broke a user rule across 20 test personas</p></div>
+      </div>
+      <div class="grid grid-2" style="margin-top:16px">
+        <div class="card stack">
+          <h3>Sensitivity comes first</h3>
+          <p class="muted small">Mark your skin as highly sensitive and fragrance, essential oils and drying alcohols are
+            filtered out by default. Strong actives come with a patch-test reminder.</p>
+        </div>
+        <div class="card stack">
+          <h3>Ingredient flags you can trust</h3>
+          <p class="muted small">Fragrance allergens, comedogenic ratings, fungal-acne triggers and pregnancy cautions come
+            from published, dermatologist-reviewed ingredient data, not from marketing copy.</p>
+        </div>
+      </div>
+      <div class="note disclaimer">SkinAnalyzer gives informational guidance, not a medical diagnosis. If your skin is painful,
+        infected, bleeding or not improving, please see a dermatologist.</div>
+    </div>
+  </section>
+</main>
+<script type="module">
+  import { mountChrome, loadJSON } from "./js/common.js";
+  mountChrome();
+  const [stats, ev] = await Promise.all([loadJSON("stats"), loadJSON("evaluation").catch(() => null)]);
+  const set = (k, v) => document.querySelectorAll(`[data-stat="${k}"]`).forEach((el) => (el.textContent = v));
+  set("products", stats.products.toLocaleString("en-US"));
+  set("ingredients", stats.ingredients.toLocaleString("en-US"));
+  set("match", `${stats.token_match_rate.toFixed(1)}%`);
+  if (ev) set("violations", `${(ev.violationRate * 100).toFixed(0)}%`);
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "ai-skincare-product-analyzer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Constraints-first, explainable skincare product recommender built on public product and ingredient data.",
+  "scripts": {
+    "build-data": "python pipeline/build_data.py",
+    "eval": "node eval/run_eval.mjs",
+    "serve": "python -m http.server 8000 --directory docs"
+  }
+}
