@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SkinAnalyzer — skincare matched to your skin, budget and ingredient needs</title>
+  <meta name="description" content="Tell us about your skin and what you avoid. SkinAnalyzer checks every ingredient, filters out what breaks your rules and explains every recommendation.">
+  <meta name="theme-color" content="#f7f3ee">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/app.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%231d1916'/%3E%3Cpath d='M16 7c4 4.6 6.5 8.2 6.5 11.4a6.5 6.5 0 0 1-13 0C9.5 15.2 12 11.6 16 7Z' fill='%23e9b9a2'/%3E%3C/svg%3E">
+</head>
+<body>
+<main>
+  <section class="hero">
+    <div class="container">
+      <div>
+        <span class="pill-note"><b>New</b> Every ingredient checked against the EU CosIng database</span>
+        <h1>Skincare chosen for <em class="accent">your</em> skin, not the hype.</h1>
+        <p class="lead">Tell us your skin type, what bothers you, your budget and what you react to. We read every ingredient
+          list, remove anything that breaks your rules, and explain why each product made your shortlist.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="analyze.html">Start your free analysis <span data-icon="arrow"></span></a>
+          <a class="btn" href="products.html">Browse products</a>
+        </div>
+        <div class="trust">
+          <div><strong data-meta="products">1,829</strong><span>products analysed</span></div>
+          <div><strong data-meta="ingredients">3,626</strong><span>ingredients decoded</span></div>
+          <div><strong data-meta="brands">127</strong><span>brands compared</span></div>
+        </div>
+      </div>
+
+      <div class="preview" aria-label="Example analysis">
+        <div class="float pv-profile">
+          <div class="row" style="justify-content:space-between;margin-bottom:10px"><h4 style="margin:0">Your skin profile</h4><span class="tag tag-sage">Example</span></div>
+          <div class="pv-row"><span>Skin type</span><b>Oily</b></div>
+          <div class="pv-row"><span>Concerns</span><b>Breakouts, dark spots</b></div>
+          <div class="pv-row"><span>Looking for</span><b>Serum under $40</b></div>
+          <div class="pv-row"><span>Sensitivity</span><b>Highly sensitive</b></div>
+        </div>
+        <div class="float pv-match" id="pv-match">
+          <div class="row" style="justify-content:space-between"><span class="rank-label">Best match</span><span class="tag tag-clay">Live result</span></div>
+          <div class="skeleton" style="height:150px;margin-top:14px"></div>
+        </div>
+        <div class="float pv-free">
+          <h4>Free of everything you avoid</h4>
+          <ul class="check-list" id="pv-free">
+            <li><span data-icon="check"></span> Added fragrance</li>
+            <li><span data-icon="check"></span> Essential oils</li>
+            <li><span data-icon="check"></span> Drying alcohols</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="how" style="padding-top:40px">
+    <div class="container">
+      <div class="section-head reveal">
+        <div><span class="eyebrow">How it works</span><h2 style="margin-top:14px">Three steps to a shortlist<br>you actually understand</h2></div>
+        <p class="muted">No quizzes that end in a sales pitch. Your answers become rules, and the rules come first.</p>
+      </div>
+      <div class="steps-row">
+        <div class="step reveal"><span class="num">01</span><div class="icon-badge"><span data-icon="target"></span></div>
+          <h3>Tell us about your skin</h3><p class="muted small">Skin type, sensitivity, up to four concerns, your budget, and any ingredient you are allergic to or simply prefer to avoid.</p></div>
+        <div class="step reveal"><span class="num">02</span><div class="icon-badge"><span data-icon="shield"></span></div>
+          <h3>We filter before we rank</h3><p class="muted small">Out of budget, wrong category, or contains something you avoid? It is removed before scoring, and no rating can bring it back.</p></div>
+        <div class="step reveal"><span class="num">03</span><div class="icon-badge"><span data-icon="sparkle"></span></div>
+          <h3>Get ranked picks, with reasons</h3><p class="muted small">What remains is scored on your concerns, preferred ingredients, skin type and budget, and each pick says why it is there.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:20px">
+    <div class="container">
+      <div class="section-head reveal">
+        <div><span class="eyebrow">Shop by concern</span><h2 style="margin-top:14px">Start with what bothers you</h2></div>
+        <a class="link" href="products.html">View all products <span data-icon="arrow"></span></a>
+      </div>
+      <div class="grid grid-4" id="concerns"></div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:20px">
+    <div class="container">
+      <div class="section-head reveal">
+        <div><span class="eyebrow">Most loved</span><h2 style="margin-top:14px">Favourites, decoded</h2></div>
+        <div class="row" id="fav-tabs" role="tablist"></div>
+      </div>
+      <div class="product-grid" id="favourites"></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="band">
+        <div class="section-head" style="margin-bottom:44px">
+          <div><span class="eyebrow" style="color:#f0c9b6">Why SkinAnalyzer</span><h2 style="margin-top:14px;color:#fff">Built to be trusted,<br>not to sell you more</h2></div>
+          <p class="muted">Every rule you set is enforced, every flag comes from published ingredient data, and nothing you share leaves your device unless it has to.</p>
+        </div>
+        <div class="grid grid-2" style="gap:32px">
+          <div class="feature"><div class="icon-badge"><span data-icon="shield"></span></div><div><h3 style="color:#fff">Your rules are never broken</h3><p class="muted small" style="margin-top:6px">Across 20 test profiles, zero recommendations broke a budget, category or ingredient rule. A plain “most loved” list broke them almost half the time.</p></div></div>
+          <div class="feature"><div class="icon-badge"><span data-icon="flask"></span></div><div><h3 style="color:#fff">Ingredient-level checks</h3><p class="muted small" style="margin-top:6px">Over 98% of ingredient names are matched to the EU CosIng database, then flagged for fragrance allergens, pore-clogging ratings and pregnancy cautions.</p></div></div>
+          <div class="feature"><div class="icon-badge"><span data-icon="lock"></span></div><div><h3 style="color:#fff">Private by design</h3><p class="muted small" style="margin-top:6px">Your selfie is checked on your own device and is never uploaded. We do not need an account, an email or a phone number.</p></div></div>
+          <div class="feature"><div class="icon-badge"><span data-icon="eye"></span></div><div><h3 style="color:#fff">Every pick explained</h3><p class="muted small" style="margin-top:6px">See which ingredient answers each concern, how the score was built, and anything worth a second look before you buy.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="data" style="padding-top:20px">
+    <div class="container">
+      <div class="section-head reveal">
+        <div><span class="eyebrow">Our data</span><h2 style="margin-top:14px">Real products. Published references.</h2></div>
+        <p class="muted">No invented products and no made-up ratings. Every number on this site comes from these public sources.</p>
+      </div>
+      <div class="grid grid-3">
+        <div class="card reveal stack"><div class="icon-badge"><span data-icon="grid"></span></div><h3>Product catalogue</h3>
+          <p class="muted small"><b data-meta="products">1,829</b> face-care products with prices, ratings, reviews and full ingredient lists, from the public Sephora catalogue dataset.</p></div>
+        <div class="card reveal stack"><div class="icon-badge"><span data-icon="flask"></span></div><h3>EU CosIng database</h3>
+          <p class="muted small">The European Commission's official cosmetic ingredient inventory: INCI names, functions and legal restrictions.</p></div>
+        <div class="card reveal stack"><div class="icon-badge"><span data-icon="leaf"></span></div><h3>Dermatologist-reviewed flags</h3>
+          <p class="muted small">CureSkin's Indian Skincare Ingredient Flags (CC BY 4.0): pore-clogging ratings, fungal-acne triggers, fragrance allergens and pregnancy cautions.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="faq" style="padding-top:20px">
+    <div class="container" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:48px">
+      <div class="reveal"><span class="eyebrow">FAQ</span><h2 style="margin-top:14px">Questions, answered</h2>
+        <p class="muted" style="margin-top:14px">Still unsure? Try the analysis. It takes about two minutes and needs no account.</p></div>
+      <div class="faq">
+        <details><summary>Is this a medical diagnosis? <span data-icon="plus"></span></summary>
+          <p>No. SkinAnalyzer gives informational guidance based on ingredient lists and your answers. If your skin is painful, infected, bleeding or not improving, please see a dermatologist.</p></details>
+        <details><summary>What happens to my selfie? <span data-icon="plus"></span></summary>
+          <p>The photo is checked in your browser for a single face, sharp focus, even lighting and enough resolution. It is never uploaded or stored. Estimating skin characteristics from photos is in development, so results today use your answers only.</p></details>
+        <details><summary>How is the match score calculated? <span data-icon="plus"></span></summary>
+          <p>Products that break any of your rules are removed first. The rest get a weighted score: 35% concern match (which ingredients target your concerns), 25% preferred ingredients, 20% skin-type fit and 20% budget fit. Parts you leave blank are skipped and the rest are rebalanced.</p></details>
+        <details><summary>Are the prices live? <span data-icon="plus"></span></summary>
+          <p>No. Prices are the retailer's US list prices at the time the catalogue was collected. Always check the current price before you buy.</p></details>
+        <details><summary>Do brands pay to be recommended? <span data-icon="plus"></span></summary>
+          <p>No. There are no sponsored placements and no affiliate links. The ranking only uses your answers and the product's ingredients, price and labels.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0">
+    <div class="container">
+      <div class="card center reveal" style="padding:64px 24px;background:var(--clay-50);border-color:var(--clay-100)">
+        <h2>Ready to meet your shortlist?</h2>
+        <p class="lead" style="margin:14px auto 28px">Two minutes, no account, and every recommendation comes with its reasons.</p>
+        <a class="btn btn-primary" href="analyze.html">Start your free analysis <span data-icon="arrow"></span></a>
+      </div>
+    </div>
+  </section>
+</main>
+<script type="module" src="assets/js/home.js"></script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Products — SkinAnalyzer</title>
+  <meta name="description" content="Browse face-care products by concern, skin type, price and the ingredients you avoid. Every ingredient list decoded.">
+  <meta name="theme-color" content="#f7f3ee">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/app.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%231d1916'/%3E%3Cpath d='M16 7c4 4.6 6.5 8.2 6.5 11.4a6.5 6.5 0 0 1-13 0C9.5 15.2 12 11.6 16 7Z' fill='%23e9b9a2'/%3E%3C/svg%3E">
+</head>
+<body>
+<main class="container">
+  <section class="page-hero">
+    <span class="eyebrow">Product catalogue</span>
+    <h1 id="page-title">Every product, decoded</h1>
+    <p class="lead">Filter by what your skin needs and what it can't stand. Each product shows its key actives, its flagged
+      ingredients and its full ingredient list.</p>
+  </section>
+
+  <div class="catalogue">
+    <aside class="filters" id="filters" aria-label="Filters">
+      <div class="filters-mobile-head"><h3>Filters</h3><button class="btn btn-ghost btn-icon" id="close-filters" aria-label="Close filters"><span data-icon="x"></span></button></div>
+      <div><h4>Category</h4><div class="filter-list" id="f-category"></div></div>
+      <div><h4>Concern</h4><div class="filter-list" id="f-concern"></div></div>
+      <div><h4>Skin type</h4><div class="filter-list" id="f-skin"></div></div>
+      <div><h4>Max price</h4>
+        <input type="range" id="f-price" min="5" max="150" step="5" value="150" aria-label="Maximum price">
+        <div class="row small muted" style="justify-content:space-between;margin-top:6px"><span>$5</span><span>Up to <span class="range-out" id="price-out">any price</span></span></div>
+      </div>
+      <div><h4>Free from</h4><div class="filter-list" id="f-avoid"></div></div>
+      <button class="btn btn-sm" id="clear">Clear all filters</button>
+    </aside>
+
+    <div>
+      <div class="toolbar">
+        <button class="btn btn-sm filter-btn" id="open-filters"><span data-icon="filter"></span> Filters</button>
+        <label class="input-icon"><span class="sr-only">Search</span><span data-icon="search"></span>
+          <input class="input" id="q" type="search" placeholder="Search products, brands or ingredients" autocomplete="off"></label>
+        <label class="sr-only" for="sort">Sort by</label>
+        <select class="select" id="sort">
+          <option value="popular">Most loved</option>
+          <option value="rating">Top rated</option>
+          <option value="price_asc">Price: low to high</option>
+          <option value="price_desc">Price: high to low</option>
+          <option value="relevance">Best match for search</option>
+        </select>
+      </div>
+      <div class="row" style="justify-content:space-between;margin-bottom:16px">
+        <p class="small muted" id="count" aria-live="polite">Loading…</p>
+        <div class="tags" id="active-filters"></div>
+      </div>
+      <div class="product-grid" id="grid"></div>
+      <nav class="pagination" id="pagination" aria-label="Pages"></nav>
+      <div class="notice" style="margin-top:40px"><span data-icon="info"></span><span>Prices are retailer list prices in US dollars at the time
+        the catalogue was collected, not live prices. Ingredient lists can change between batches, so check the label too.</span></div>
+    </div>
+  </div>
+</main>
+<script type="module" src="assets/js/products.js"></script>
+</body>
+</html>

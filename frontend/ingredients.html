@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ingredient dictionary — SkinAnalyzer</title>
+  <meta name="description" content="What every skincare ingredient does, who it suits and what to watch for, with EU CosIng functions and dermatologist-reviewed flags.">
+  <meta name="theme-color" content="#f7f3ee">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/app.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%231d1916'/%3E%3Cpath d='M16 7c4 4.6 6.5 8.2 6.5 11.4a6.5 6.5 0 0 1-13 0C9.5 15.2 12 11.6 16 7Z' fill='%23e9b9a2'/%3E%3C/svg%3E">
+</head>
+<body>
+<main class="container">
+  <section class="page-hero">
+    <span class="eyebrow">Ingredient dictionary</span>
+    <h1>Know what's in the bottle</h1>
+    <p class="lead">Plain-English guides to the actives that matter, and a searchable reference for every one of the
+      <b data-meta="ingredients">3,626</b> ingredients in our catalogue.</p>
+  </section>
+
+  <section style="padding-bottom:56px">
+    <div class="section-head" style="margin-bottom:22px"><h2>Key actives</h2>
+      <div class="row" id="guide-filter"></div></div>
+    <div class="grid grid-3" id="guides"></div>
+  </section>
+
+  <section style="padding-bottom:24px">
+    <div class="section-head" style="margin-bottom:22px"><div><h2>Look up any ingredient</h2>
+      <p class="muted small" style="margin-top:8px">Functions from the EU CosIng database · flags from CureSkin's dermatologist-reviewed dataset. A blank flag means not assessed, not "safe".</p></div></div>
+    <div class="toolbar">
+      <label class="input-icon"><span class="sr-only">Search ingredients</span><span data-icon="search"></span>
+        <input class="input" id="q" type="search" placeholder="Search, e.g. linalool, dimethicone, centella" autocomplete="off"></label>
+      <label class="sr-only" for="family">Flag</label>
+      <select class="select" id="family"><option value="">All ingredients</option></select>
+    </div>
+    <div class="table-card"><div class="table-scroll"><table class="ing-table">
+      <thead><tr><th>Ingredient</th><th>What it does</th><th>Flags</th><th>Pore-clogging</th><th style="text-align:right">Products</th></tr></thead>
+      <tbody id="rows"></tbody></table></div></div>
+    <div class="row" style="justify-content:space-between;margin-top:16px"><p class="small muted" id="icount"></p><button class="btn btn-sm" id="imore">Show more</button></div>
+  </section>
+
+  <div class="notice" style="margin-top:24px"><span data-icon="info"></span><span>General information about how ingredients are commonly
+    used. Not medical advice, and no guarantee that a product will suit you. Patch-test anything new.</span></div>
+</main>
+<script type="module" src="assets/js/ingredients.js"></script>
+</body>
+</html>

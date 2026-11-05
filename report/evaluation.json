@@ -1,0 +1,373 @@
+{
+ "generated": "2026-11-05",
+ "personas": 20,
+ "k": 5,
+ "summary": {
+  "ours": {
+   "p": 0.61,
+   "r": 0.61,
+   "ndcg": 0.6106993132367264
+  },
+  "popularity": {
+   "p": 0.4,
+   "r": 0.4,
+   "ndcg": 0.38990380046059897
+  },
+  "cheapest": {
+   "p": 0.31,
+   "r": 0.31,
+   "ndcg": 0.32204111965093013
+  },
+  "random": {
+   "p": 0.37433333333333335,
+   "r": 0.37433333333333335,
+   "ndcg": 0.3792431507162949
+  },
+  "noC": {
+   "p": 0.53,
+   "r": 0.53,
+   "ndcg": 0.5317963828615165
+  },
+  "noI": {
+   "p": 0.5700000000000001,
+   "r": 0.5700000000000001,
+   "ndcg": 0.5786013735265473
+  },
+  "noK": {
+   "p": 0.6,
+   "r": 0.6,
+   "ndcg": 0.591219438019497
+  },
+  "noB": {
+   "p": 0.6,
+   "r": 0.6,
+   "ndcg": 0.5798167836658666
+  }
+ },
+ "violation_rate": 0.0,
+ "naive_violation_rate": 0.48,
+ "explanation_coverage": 1.0,
+ "weight_sensitivity_jaccard": 0.9577380952380953,
+ "per_persona": [
+  {
+   "id": "P01",
+   "label": "Oily, acne-prone student on a tight budget",
+   "eligible": 63,
+   "relevant": 16,
+   "p": 0.8,
+   "r": 0.8,
+   "ndcg": 0.7860137352654724,
+   "top": [
+    "SEPHORA COLLECTION \u2014 Smoothing Cleanser",
+    "tarte \u2014 knockout daily exfoliating cleanser",
+    "innisfree \u2014 Volcanic Pore Clearing Facial Cleanser with AHA + BHA",
+    "Paula's Choice \u2014 CLEAR Pore Normalizing Acne Cleanser",
+    "Community Sixty-Six \u2014 Detoxifying AHA/BHA Gel Cleanser"
+   ]
+  },
+  {
+   "id": "P02",
+   "label": "Dry, sensitive skin, no fragrance",
+   "eligible": 69,
+   "relevant": 23,
+   "p": 0.4,
+   "r": 0.4,
+   "ndcg": 0.36005461457723403,
+   "top": [
+    "Glossier \u2014 Priming Moisturizer Rich Face Cream with Ceramides",
+    "Paula's Choice \u2014 Omega+ Complex Moisturizer",
+    "Paula's Choice \u2014 RESIST Barrier Repair Moisturizer with Retinol",
+    "Summer Fridays \u2014 Cloud Dew Gel Cream Moisturizer",
+    "Supergoop! \u2014 Daily Dose Hydra-Ceramide Boost + SPF 40 Sunscreen Oil PA+++"
+   ]
+  },
+  {
+   "id": "P03",
+   "label": "Combination skin with dark spots",
+   "eligible": 212,
+   "relevant": 81,
+   "p": 0.6,
+   "r": 0.6,
+   "ndcg": 0.4912596920895758,
+   "top": [
+    "innisfree \u2014 Green Tea Hyaluronic Acid Hydrating Serum",
+    "Paula's Choice \u2014 CLINICAL Niacinamide 20% Treatment",
+    "Dr. Jart+ \u2014 Focuspot Dark Spot Micro Tip Patch",
+    "IT Cosmetics \u2014 Bye Bye Dark Spots 4% Niacinamide Serum",
+    "Peace Out \u2014 Dark Spots Serum"
+   ]
+  },
+  {
+   "id": "P04",
+   "label": "Normal skin, early fine lines",
+   "eligible": 267,
+   "relevant": 105,
+   "p": 0.8,
+   "r": 0.8,
+   "ndcg": 0.8539316501572937,
+   "top": [
+    "Peace Out \u2014 Microneedling Anti-Wrinkle Retinol Patches",
+    "LANEIGE \u2014 Retinol Firming Cream Treatment with Peptides + Hyaluronic Acid",
+    "Paula's Choice \u2014 CLINICAL 1% Retinol Treatment",
+    "Dr. Dennis Gross Skincare \u2014 Alpha Beta Pore Perfecting & Refining Serum",
+    "Saint Jane Beauty \u2014 Sacred Sleep Overnight Repair with Retinol"
+   ]
+  },
+  {
+   "id": "P05",
+   "label": "Pregnant, wants a gentle dark-spot serum",
+   "eligible": 193,
+   "relevant": 36,
+   "p": 0.0,
+   "r": 0.0,
+   "ndcg": 0.0,
+   "top": [
+    "The INKEY List \u2014 15% Vitamin C and EGF Brightening Serum",
+    "iNNBEAUTY PROJECT \u2014 Pimple Paste Overnight Blemish Drying Paste",
+    "SEPHORA COLLECTION \u2014 Ultra Glow Serum: Glow + Strengthen Vitamin C Serum",
+    "fresh \u2014 Mini Vitamin Nectar Glow Juice Antioxidant Face Serum",
+    "Glossier \u2014 Super Pure Clarifying Face Serum with Niacinamide + Zinc"
+   ]
+  },
+  {
+   "id": "P06",
+   "label": "Oily skin, daily sunscreen without chemical filters",
+   "eligible": 44,
+   "relevant": 23,
+   "p": 1.0,
+   "r": 1.0,
+   "ndcg": 1.0,
+   "top": [
+    "Paula's Choice \u2014 RESIST Super-Light Daily Wrinkle Defense SPF 30",
+    "Supergoop! \u2014 Mineral Sheerscreen Sunscreen SPF 30 PA+++",
+    "TULA Skincare \u2014 Mineral Magic Oil-Free Mineral Sunscreen Fluid Broad Spectrum SPF 30",
+    "REN Clean Skincare \u2014 Clean Screen Mineral SPF 30 Mattifying Face Sunscreen",
+    "Dermalogica \u2014 Invisible Physical Defense Mineral Sunscreen SPF30"
+   ]
+  },
+  {
+   "id": "P07",
+   "label": "Fungal-acne prone, light moisturiser",
+   "eligible": 16,
+   "relevant": 6,
+   "p": 0.4,
+   "r": 0.4,
+   "ndcg": 0.38356636737133565,
+   "top": [
+    "Farmacy \u2014 Daily Greens Oil-Free Gel Moisturizer with Moringa and Papaya",
+    "Jack Black \u2014 Acne Remedy Overnight Repair Moisturizer",
+    "Skinfix \u2014 Barrier+ Skin Barrier Niacinamide Restoring Gel Cream",
+    "Tatcha \u2014 Mini The Water Cream",
+    "innisfree \u2014 Dewy Glow Moisturizer with Cherry Blossom & Niacinamide"
+   ]
+  },
+  {
+   "id": "P08",
+   "label": "Dry skin, tired eyes",
+   "eligible": 102,
+   "relevant": 62,
+   "p": 0.6,
+   "r": 0.6,
+   "ndcg": 0.4468535299918563,
+   "top": [
+    "SEPHORA COLLECTION \u2014 Brightening Eye Cream with Caffeine and Hyaluronic Acid",
+    "TULA Skincare \u2014 24-7 Power Swipe Hydrating Day & Night Treatment Eye Balm",
+    "Summer Fridays \u2014 Light Aura Vitamin C + Peptide Eye Cream",
+    "LANEIGE \u2014 Water Bank Blue Hyaluronic Eye Cream",
+    "The INKEY List \u2014 Caffeine Eye Cream"
+   ]
+  },
+  {
+   "id": "P09",
+   "label": "Sensitive, redness-prone, any category",
+   "eligible": 343,
+   "relevant": 25,
+   "p": 0.0,
+   "r": 0.0,
+   "ndcg": 0.0,
+   "top": [
+    "Dr. Jart+ \u2014 Ceramidin Skin Barrier Moisturizing Mask",
+    "The INKEY List \u2014 Omega Water Cream Moisturizer",
+    "SEPHORA COLLECTION \u2014 Clarifying Toner with Niacinamide and Zinc",
+    "The INKEY List \u2014 C-50 Blemish Night Treatment",
+    "Community Sixty-Six \u2014 Makeup Melting Balm Cleanser"
+   ]
+  },
+  {
+   "id": "P10",
+   "label": "Oily skin, pores and shine, toner",
+   "eligible": 64,
+   "relevant": 17,
+   "p": 0.8,
+   "r": 0.8,
+   "ndcg": 0.830419897363192,
+   "top": [
+    "SEPHORA COLLECTION \u2014 Clarifying Toner with Niacinamide and Zinc",
+    "Paula's Choice \u2014 RESIST Weightless Advanced Repairing Toner",
+    "Dr. Jart+ \u2014 Teatreement Toner",
+    "Farmacy \u2014 Deep Sweep 2% BHA Pore Cleaning Toner with Moringa + Papaya",
+    "TULA Skincare \u2014 Balancing Act Purifying & pH Balancing Biodegradable Toner Pads"
+   ]
+  },
+  {
+   "id": "P11",
+   "label": "Dull skin, wants an exfoliator",
+   "eligible": 74,
+   "relevant": 44,
+   "p": 0.6,
+   "r": 0.6,
+   "ndcg": 0.6843515475204855,
+   "top": [
+    "Paula's Choice \u2014 Skin Perfecting 8% AHA Gel Exfoliant",
+    "First Aid Beauty \u2014 Facial Radiance Pads",
+    "Dr. Zenovia Skincare \u2014 10% Glycolic Acne Control Peel Pads",
+    "Murad \u2014 AHA/BHA/Retinoid Daily Clarifying Peel",
+    "StriVectin \u2014 Daily Reveal  Exfoliating Face Pads with AHA + BHA + PHA + TXA"
+   ]
+  },
+  {
+   "id": "P12",
+   "label": "Allergic to parabens and sulfates, cleanser",
+   "eligible": 158,
+   "relevant": 45,
+   "p": 0.4,
+   "r": 0.4,
+   "ndcg": 0.5087403079104241,
+   "top": [
+    "innisfree \u2014 Green Tea Hyaluronic Acid Face Cleanser",
+    "IT Cosmetics \u2014 Mini Confidence in a Cleanser",
+    "Community Sixty-Six \u2014 Makeup Melting Balm Cleanser",
+    "Community Sixty-Six \u2014 Hydrating Cream Cleanser with Hyaluronic Acid",
+    "The INKEY List \u2014 SuperSolutions 5% Benzoyl Peroxide Cleanser Acne Solution"
+   ]
+  },
+  {
+   "id": "P13",
+   "label": "Silicone-free, ageing, moisturiser",
+   "eligible": 110,
+   "relevant": 66,
+   "p": 1.0,
+   "r": 1.0,
+   "ndcg": 1.0,
+   "top": [
+    "Paula's Choice \u2014 RESIST Barrier Repair Moisturizer with Retinol",
+    "Summer Fridays \u2014 Cloud Dew Gel Cream Moisturizer",
+    "The Nue Co. \u2014 Barrier Culture Moisturizer with Niacinamide & Squalane",
+    "Paula's Choice \u2014 Omega+ Complex Moisturizer",
+    "Community Sixty-Six \u2014 Retinol Resurfacing Night Moisturizer"
+   ]
+  },
+  {
+   "id": "P14",
+   "label": "Acne-prone, avoids highly comedogenic ingredients",
+   "eligible": 155,
+   "relevant": 38,
+   "p": 1.0,
+   "r": 1.0,
+   "ndcg": 1.0,
+   "top": [
+    "The INKEY List \u2014 Niacinamide Oil Control Serum",
+    "The INKEY List \u2014 C-50 Blemish Night Treatment",
+    "iNNBEAUTY PROJECT \u2014 Pimple Paste Overnight Blemish Drying Paste",
+    "SEPHORA COLLECTION \u2014 Clarifying Peel Pads Purify + Exfoliate",
+    "The INKEY List \u2014 SuperSolutions 20% Niacinamide Serum"
+   ]
+  },
+  {
+   "id": "P15",
+   "label": "Allergic to linalool and limonene, redness, mask",
+   "eligible": 97,
+   "relevant": 35,
+   "p": 1.0,
+   "r": 1.0,
+   "ndcg": 1.0,
+   "top": [
+    "Dr. Jart+ \u2014 Ceramidin Skin Barrier Moisturizing Mask",
+    "Dr. Jart+ \u2014 Ceramidin Cream-Infused Mask",
+    "Naturally Serious \u2014 Mask-imum Revival Hydra-Plumping Mask",
+    "Dr. Jart+ \u2014 Sheet Masks",
+    "Dr. Jart+ \u2014 Dermask Water Jet Vital Hydra Solution"
+   ]
+  },
+  {
+   "id": "P16",
+   "label": "Unsure of skin type, wants hydration under $20",
+   "eligible": 276,
+   "relevant": 63,
+   "p": 0.4,
+   "r": 0.4,
+   "ndcg": 0.38356636737133565,
+   "top": [
+    "SEPHORA COLLECTION \u2014 Clean Watermelon After Sun Mask",
+    "SEPHORA COLLECTION \u2014 Clean Face Mask",
+    "SEPHORA COLLECTION \u2014 Vitamin Face Masks",
+    "The Ordinary \u2014 Natural Moisturizing Factors + HA",
+    "tarte \u2014 SEA Mermaid Skin Hyaluronic H2O Serum"
+   ]
+  },
+  {
+   "id": "P17",
+   "label": "Dry lips",
+   "eligible": 18,
+   "relevant": 6,
+   "p": 0.4,
+   "r": 0.4,
+   "ndcg": 0.48522855511632257,
+   "top": [
+    "Biossance \u2014 Squalane+ Rose Vegan Lip Balm",
+    "CAY SKIN \u2014 Deepwater Nourishing Lip Mask with Sea Moss and Aloe Stem Cells",
+    "Kosas \u2014 Plump + Juicy Lip Booster Buttery Treatment",
+    "Soleil Toujours \u2014 Hydra Lip Masque Mineral SPF 15 with Peptides",
+    "CLINIQUE \u2014 All About Lips"
+   ]
+  },
+  {
+   "id": "P18",
+   "label": "Combination skin, acne and dark spots, premium serum",
+   "eligible": 215,
+   "relevant": 66,
+   "p": 0.8,
+   "r": 0.8,
+   "ndcg": 0.8539316501572937,
+   "top": [
+    "alpyn beauty \u2014 Vitamin C & Bearberry Instant Glow Serum",
+    "Drunk Elephant \u2014 Bouncy Brightfacial Brightening Mask with 10% Azelaic Acid + 1% Salicylic Acid",
+    "Caudalie \u2014 Vinopure Natural Salicylic Acid Pore Minimizing Serum",
+    "Paula's Choice \u2014 CLINICAL Niacinamide 20% Treatment",
+    "Paula's Choice \u2014 CLINICAL Discoloration Repair Serum"
+   ]
+  },
+  {
+   "id": "P19",
+   "label": "Dry skin, face oil without essential oils",
+   "eligible": 20,
+   "relevant": 9,
+   "p": 0.4,
+   "r": 0.4,
+   "ndcg": 0.3156484524795145,
+   "top": [
+    "Glossier \u2014 Futuredew Facial Oil-Serum Hybrid",
+    "Summer Fridays \u2014 Heavenly Sixteen All-In-One Face Oil",
+    "The Ordinary \u2014 \"B\" Oil",
+    "Herbivore \u2014 Emerald Hemp Seed Deep Moisture Glow Oil",
+    "Herbivore \u2014 Emerald CBD + Adaptogens Deep Moisture Glow Oil"
+   ]
+  },
+  {
+   "id": "P20",
+   "label": "Ageing and dark spots, sunscreen",
+   "eligible": 52,
+   "relevant": 35,
+   "p": 0.8,
+   "r": 0.8,
+   "ndcg": 0.830419897363192,
+   "top": [
+    "Paula's Choice \u2014 RESIST Super-Light Daily Wrinkle Defense SPF 30",
+    "Supergoop! \u2014 (Glow)Setting 100% Mineral Powder SPF 35",
+    "Saint Jane Beauty \u2014 Luxury Sun Ritual Pore Smoothing Sunscreen SPF 30",
+    "Peter Thomas Roth \u2014 Max Clear Invisible Priming Sunscreen Broad Spectrum SPF 45",
+    "Supergoop! \u2014 Mineral Sheerscreen Sunscreen SPF 30 PA+++"
+   ]
+  }
+ ]
+}

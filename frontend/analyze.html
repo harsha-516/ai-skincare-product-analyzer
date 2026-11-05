@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Skin analysis — SkinAnalyzer</title>
+  <meta name="description" content="Answer five short steps and get skincare that respects your budget and ingredient restrictions, with the reasons for every pick.">
+  <meta name="theme-color" content="#f7f3ee">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/app.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%231d1916'/%3E%3Cpath d='M16 7c4 4.6 6.5 8.2 6.5 11.4a6.5 6.5 0 0 1-13 0C9.5 15.2 12 11.6 16 7Z' fill='%23e9b9a2'/%3E%3C/svg%3E">
+</head>
+<body>
+<main class="container">
+  <section class="page-hero" id="intro" style="padding-bottom:28px">
+    <span class="eyebrow">Skin analysis</span>
+    <h1>Let's find what suits you</h1>
+    <p class="lead">Five short steps, about two minutes. Nothing you enter is stored, and no account is needed.</p>
+  </section>
+
+  <div class="wizard" id="wizard">
+    <nav class="stepper" id="stepper" aria-label="Steps"></nav>
+
+    <form class="card" id="form" novalidate style="padding:36px">
+      <div class="progress" aria-hidden="true"><i id="progress"></i></div>
+
+      <section class="panel" data-step="0">
+        <span class="eyebrow">Step 1 of 5</span>
+        <h2 style="margin-top:10px">Your skin</h2>
+        <p class="lead">How does your skin usually feel a few hours after washing?</p>
+        <div class="panel-section">
+          <span class="field-label">Skin type</span>
+          <div class="options" id="skin"></div>
+        </div>
+        <div class="panel-section">
+          <span class="field-label">How easily does your skin react?</span>
+          <div class="options" id="sens"></div>
+          <p class="small subtle" style="margin-top:10px">Highly sensitive pre-selects fragrance, essential oils and drying alcohols to avoid in step 4. You can change that.</p>
+        </div>
+      </section>
+
+      <section class="panel" data-step="1">
+        <span class="eyebrow">Step 2 of 5</span>
+        <h2 style="margin-top:10px">What bothers you most?</h2>
+        <p class="lead">Pick up to four. We match each one to ingredients known to target it.</p>
+        <div class="options" id="concerns"></div>
+        <p class="small subtle" style="margin-top:12px" id="concern-count">0 of 4 selected</p>
+      </section>
+
+      <section class="panel" data-step="2">
+        <span class="eyebrow">Step 3 of 5</span>
+        <h2 style="margin-top:10px">What are you shopping for?</h2>
+        <p class="lead">Choose a product type and the price range you are comfortable with.</p>
+        <div class="panel-section">
+          <span class="field-label">Product type</span>
+          <div class="options" id="category"></div>
+        </div>
+        <div class="panel-section">
+          <span class="field-label">Budget per product (USD)</span>
+          <div class="range-row">
+            <label class="prefix"><span class="sr-only">Minimum</span><input class="input" id="bmin" type="number" min="0" step="1" inputmode="decimal" value="0"></label>
+            <label class="prefix"><span class="sr-only">Maximum</span><input class="input" id="bmax" type="number" min="0" step="1" inputmode="decimal" value="50"></label>
+          </div>
+          <div class="presets" id="presets"></div>
+        </div>
+      </section>
+
+      <section class="panel" data-step="3">
+        <span class="eyebrow">Step 4 of 5</span>
+        <h2 style="margin-top:10px">Ingredients</h2>
+        <p class="lead">Anything you choose to avoid is a hard rule: products that contain it are never shown.</p>
+        <div class="panel-section">
+          <span class="field-label">Avoid these ingredient groups</span>
+          <div class="options" id="families"></div>
+        </div>
+        <div class="panel-section">
+          <label class="field-label" for="avoid-input">Specific ingredients you are allergic to</label>
+          <div class="typeahead">
+            <div class="input-icon"><span data-icon="search"></span><input class="input" id="avoid-input" autocomplete="off" placeholder="Search, e.g. linalool, coconut oil" role="combobox" aria-expanded="false" aria-controls="avoid-suggest"></div>
+            <div class="suggest hidden" id="avoid-suggest" role="listbox"></div>
+          </div>
+          <div class="picked" id="avoid-picked"></div>
+        </div>
+        <div class="panel-section">
+          <label class="field-label" for="prefer-input">Ingredients you would like <span class="subtle" style="font-weight:400">(optional)</span></label>
+          <div class="typeahead">
+            <div class="input-icon"><span data-icon="search"></span><input class="input" id="prefer-input" autocomplete="off" placeholder="Search, e.g. niacinamide, ceramide np" role="combobox" aria-expanded="false" aria-controls="prefer-suggest"></div>
+            <div class="suggest hidden" id="prefer-suggest" role="listbox"></div>
+          </div>
+          <div class="picked" id="prefer-picked"></div>
+        </div>
+      </section>
+
+      <section class="panel" data-step="4">
+        <span class="eyebrow">Step 5 of 5 · Optional</span>
+        <h2 style="margin-top:10px">Photo check</h2>
+        <p class="lead">Add a clear, front-facing selfie. We check it on your device for one face, sharp focus, even light and enough resolution.</p>
+        <label class="drop" id="drop">
+          <input type="file" id="photo" accept="image/*" class="sr-only">
+          <span class="icon-badge"><span data-icon="camera"></span></span>
+          <strong>Upload a selfie or drag it here</strong>
+          <span class="small subtle">JPG or PNG · stays on your device · never uploaded</span>
+        </label>
+        <div id="photo-out" style="margin-top:18px"></div>
+        <div class="notice" style="margin-top:18px"><span data-icon="lock"></span><span>Skin estimates from photos are still in development, so your results are based on your answers. You can skip this step.</span></div>
+      </section>
+
+      <div class="alert" id="errors" role="alert" style="margin-top:20px"></div>
+      <div class="wizard-nav">
+        <button class="btn" type="button" id="back"><span data-icon="back"></span> Back</button>
+        <button class="btn btn-primary" type="button" id="next">Continue <span data-icon="arrow"></span></button>
+      </div>
+    </form>
+  </div>
+
+  <section id="results" class="hidden" aria-live="polite" style="padding-top:40px"></section>
+</main>
+<script type="module" src="assets/js/analyze.js"></script>
+</body>
+</html>

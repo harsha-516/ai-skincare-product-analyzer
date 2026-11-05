@@ -4,9 +4,7 @@ Module 3 — ingredient and product data processing.
 Reads the three raw datasets in data/raw/, cleans and standardises them, and writes:
   data/processed/products.csv        clean product table (one row per product)
   data/processed/ingredients.csv     ingredient vocabulary with functions and flags
-  docs/data/products.json            compact product data for the website
-  docs/data/ingredients.json         compact ingredient data for the website
-  docs/data/stats.json               dataset numbers shown on the website
+  data/skincare.db                   SQLite database read by the backend
   report/data_audit.md               data-quality audit (objectives O2 and O3)
   report/manual_check_sample.csv     50 random products for the manual matching check
 
@@ -28,12 +26,13 @@ import pandas as pd
 from rapidfuzz import fuzz, process
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from database import write_database
 from reference import (ACTIVES, CONCERNS, FAMILIES, SYNONYMS, family_of_name)
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW = ROOT / "data" / "raw"
 OUT = ROOT / "data" / "processed"
-WEB = ROOT / "docs" / "data"
+DB_PATH = ROOT / "data" / "skincare.db"
 REPORT = ROOT / "report"
 
 FUZZY_CUTOFF = 93  # RapidFuzz similarity (0–100) needed to accept a fuzzy match
@@ -352,7 +351,6 @@ def main():
             "product_count": ingredient_usage[k],
         })
     ingredients = pd.DataFrame(ing_rows)
-    ing_index = {k: i for i, k in enumerate(vocab_keys)}
     ing_lookup = {r["key"]: r for r in ing_rows}
 
     # Product-level families and concern evidence, derived from ingredients only.
@@ -380,7 +378,6 @@ def main():
     products["concern_strength"] = strengths
 
     OUT.mkdir(parents=True, exist_ok=True)
-    WEB.mkdir(parents=True, exist_ok=True)
     REPORT.mkdir(parents=True, exist_ok=True)
 
     csv = products.copy()
@@ -394,27 +391,6 @@ def main():
     ing_csv["families"] = ing_csv["families"].apply(lambda v: "; ".join(v))
     ing_csv["concerns"] = ing_csv["concerns"].apply(json.dumps)
     ing_csv.to_csv(OUT / "ingredients.csv", index=False)
-
-    # ------------------------------------------------------------- compact JSON for the site
-    web_products = []
-    for p, f, e, cs in zip(rows, fams, evid, strengths):
-        web_products.append({
-            "id": p["id"], "n": p["name"], "b": p["brand"], "c": p["category"],
-            "p": p["price_usd"], "sp": p["sale_price_usd"], "s": p["size"],
-            "r": p["rating"], "rv": p["reviews"], "lv": p["loves"],
-            "st": p["skin_types"], "gf": p["retailer_good_for"], "cl": p["claims"],
-            "i": [ing_index[k] for k in p["ingredients"] if k in ing_index],
-            "u": len(p["unmatched"]), "cp": p["completeness"], "f": f,
-            "e": {c: list(dict.fromkeys(v))[:4] for c, v in e.items()}, "cs": cs,
-        })
-    (WEB / "products.json").write_text(json.dumps(web_products, separators=(",", ":")),
-                                       encoding="utf-8")
-    web_ings = [{"k": r["key"], "n": r["name"], "fn": r["function"],
-                 "cf": r["cureskin_function"], "eu": r["eu_restriction"],
-                 "co": r["comedogenic"], "f": r["families"], "c": r["concerns"],
-                 "pc": r["product_count"]} for r in ing_rows]
-    (WEB / "ingredients.json").write_text(json.dumps(web_ings, separators=(",", ":")),
-                                          encoding="utf-8")
 
     total_tokens = sum(method_counts.values())
     matched = total_tokens - method_counts["unmatched"]
@@ -431,9 +407,8 @@ def main():
         "categories": products.category.value_counts().to_dict(),
         "price_min": float(products.price_usd.min()), "price_max": float(products.price_usd.max()),
         "price_median": float(products.price_usd.median()),
-        "concerns": CONCERNS, "families": FAMILIES,
     }
-    (WEB / "stats.json").write_text(json.dumps(stats, indent=1), encoding="utf-8")
+    write_database(DB_PATH, rows, fams, evid, strengths, ing_rows, CONCERNS, FAMILIES, stats)
 
     # ------------------------------------------------------------- audit + manual sample
     sample = products[products.completeness != "missing"].sample(50, random_state=7)
