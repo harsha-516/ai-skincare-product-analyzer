@@ -56,11 +56,13 @@ export const familyTag = (f) => `<span class="tag ${WARN_FAMILIES.has(f) ? "tag-
 
 // ----------------------------------------------------------------------- helpers
 export const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-export const money = (v) => `$${Number(v) % 1 === 0 ? Number(v).toFixed(0) : Number(v).toFixed(2)}`;
+export const money = (v) => `₹${Math.round(Number(v)).toLocaleString("en-IN")}`;
 export const num = (v) => Number(v).toLocaleString("en-US");
 export const $ = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
-export const retailerLink = (p) => `https://www.sephora.com/search?keyword=${encodeURIComponent(`${p.brand} ${p.name}`)}`;
+export const retailerLink = (p) => p.url;
+// Shopify CDN images accept a width parameter, so cards never download full-size photos.
+export const sized = (src, w) => (src ? `${src}${src.includes("?") ? "&" : "?"}width=${w}` : "");
 export const params = () => new URLSearchParams(location.search);
 
 export function toast(text) {
@@ -122,9 +124,19 @@ const SHAPES = {
   small: (c, cap) => `<rect x="40" y="40" width="20" height="22" rx="5" fill="${cap}"/><rect x="34" y="60" width="32" height="88" rx="12" fill="${c}"/>`,
 };
 const CATEGORY_SHAPE = { Serum: "dropper", "Face oil": "dropper", Moisturiser: "jar", Mask: "jar", Cleanser: "pump",
-  Sunscreen: "tube", "Eye care": "small", "Lip care": "small", Toner: "tall", Exfoliator: "tall" };
+  Sunscreen: "tube", "Eye care": "small", "Lip care": "small", Toner: "tall", Exfoliator: "tall", "Spot treatment": "small" };
 
-export function productVisual(p, { badge = "" } = {}) {
+export function productVisual(p, { badge = "", width = 480 } = {}) {
+  if (p.image) {
+    return `<div class="pvis pvis-photo">${badge ? `<div class="badge-corner">${badge}</div>` : ""}
+      <img src="${esc(sized(p.image, width))}" alt="${esc(p.name)} by ${esc(p.brand)}" loading="lazy" decoding="async"
+        onerror="this.closest('.pvis').classList.add('img-failed');this.remove()"></div>`;
+  }
+  return drawnVisual(p, badge);
+}
+
+// Fallback pack drawing for products without a photo.
+function drawnVisual(p, badge) {
   const h = hash(p.brand + p.id);
   const tint = TINTS[h % TINTS.length];
   const pack = PACKS[(h >>> 3) % PACKS.length];
@@ -146,23 +158,39 @@ export function productVisual(p, { badge = "" } = {}) {
 }
 
 export function stars(r) {
-  if (r == null) return `<span class="rating subtle">No ratings</span>`;
+  if (r == null) return "";
   return `<span class="rating">${icon("star")}<b>${r.toFixed(1)}</b></span>`;
 }
 
+export const priceHTML = (p) =>
+  `<span class="price">${money(p.price)}${p.mrp ? `<s>${money(p.mrp)}</s>` : ""}</span>${p.discount_pct ? `<span class="off">${p.discount_pct}% off</span>` : ""}`;
+
 export function productCard(p, { extra = "" } = {}) {
-  const badge = p.on_sale ? `<span class="tag tag-ink">Sale</span>` : p.fragrance_free ? `<span class="tag" style="background:rgba(255,255,255,.85)">Fragrance-free</span>` : "";
+  const badge = !p.in_stock ? `<span class="tag tag-ink">Out of stock</span>`
+    : p.fragrance_free ? `<span class="tag tag-float">Fragrance-free</span>` : "";
   const actives = (p.key_actives || []).slice(0, 2).map((a) => a.ingredient).join(" · ");
   return `<a class="product-card" href="product.html?id=${encodeURIComponent(p.id)}">
-    ${productVisual(p, { badge })}
+    ${productVisual(p, { badge, width: 400 })}
     <div class="body">
       <span class="brand">${esc(p.brand)}</span>
       <h3>${esc(p.name)}</h3>
       ${actives ? `<span class="actives">${esc(actives)}</span>` : ""}
       ${extra}
-      <div class="meta"><span class="price">${money(p.effective_price)}${p.on_sale ? `<s>${money(p.price)}</s>` : ""}</span>${stars(p.rating)}</div>
+      <div class="meta"><span class="row" style="gap:8px">${priceHTML(p)}</span>${p.size ? `<span class="xs subtle">${esc(p.size)}</span>` : ""}</div>
     </div>
   </a>`;
+}
+
+// Where to buy: the exact page on the brand's store, plus searches on the big marketplaces.
+export function shopLinks(p, { compact = false } = {}) {
+  const links = p.shop_links || [];
+  const official = links.find((l) => l.exact);
+  const others = links.filter((l) => !l.exact);
+  return `<div class="shop">
+    ${official ? `<a class="btn btn-primary${compact ? " btn-sm" : ""}" href="${esc(official.url)}" target="_blank" rel="noopener">Buy on ${esc(p.brand)} · ${money(p.price)} ${icon("external")}</a>` : ""}
+    ${others.length ? `<div class="compare"><span class="xs subtle">Compare on</span>${others.map((l) =>
+      `<a class="store-chip" href="${esc(l.url)}" target="_blank" rel="noopener" title="Search ${esc(l.label)} for this product">${esc(l.label)}</a>`).join("")}</div>` : ""}
+  </div>`;
 }
 
 export const skeletonCards = (n = 8) => Array.from({ length: n }, () => `<div class="skeleton" style="height:360px"></div>`).join("");
@@ -202,14 +230,14 @@ export function mountChrome() {
         <li><a href="analyze.html">Skin analysis</a></li><li><a href="products.html">Products</a></li><li><a href="ingredients.html">Ingredient dictionary</a></li></ul></div>
       <div><h4>Shop by concern</h4><ul>
         <li><a href="products.html?concern=acne">Breakouts</a></li><li><a href="products.html?concern=dark_spots">Dark spots</a></li>
-        <li><a href="products.html?concern=dryness">Dryness</a></li><li><a href="products.html?concern=redness">Redness</a></li></ul></div>
+        <li><a href="products.html?concern=dryness">Dryness</a></li><li><a href="products.html?concern=sun">Sun protection</a></li></ul></div>
       <div><h4>Information</h4><ul>
         <li><a href="index.html#how">How it works</a></li><li><a href="index.html#faq">FAQ</a></li>
         <li><a href="index.html#data">Data sources</a></li><li><a href="/api/docs">Developer API</a></li></ul></div>
     </div>
     <div class="footer-bottom">
       <span>© ${new Date().getFullYear()} SkinAnalyzer. Guidance only, not a medical diagnosis.</span>
-      <span>Ingredient data: EU CosIng · CureSkin (CC BY 4.0) · Product data: Sephora catalogue</span>
+      <span>Prices and products from brands' official Indian stores · Ingredient data: EU CosIng, CureSkin (CC BY 4.0)</span>
     </div></div>`;
   document.body.append(footer);
   hydrateIcons();

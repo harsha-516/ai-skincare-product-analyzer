@@ -12,13 +12,18 @@ from __future__ import annotations
 
 import math
 import os
+import re
 from contextlib import asynccontextmanager
 from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from urllib.parse import quote, quote_plus
+
 from pydantic import BaseModel, Field
+
+from collections import Counter
 
 from .catalogue import ROOT, Catalogue, Product, get_catalogue
 from .recommender import Profile, recommend, validate
@@ -61,15 +66,35 @@ def key_actives(p: Product, cat: Catalogue) -> list[dict]:
     return [{"ingredient": k, "concerns": v} for k, v in by_ing.items()]
 
 
+def shop_links(p: Product) -> list[dict]:
+    """The exact product on the brand's own store, then a search for it on marketplaces.
+    Marketplace prices are not shown: their terms do not allow automated price collection."""
+    q = re.sub(r"\s*[-|]\s*\d+(\.\d+)?\s?(ml|g|gm)\b.*$", "", p.name, flags=re.I)
+    q = q.split(" | ")[0].strip()  # drop marketing tails such as "| with 10% Niacinamide"
+    q = f"{p.brand} {q}".strip()
+    slug = re.sub(r"[^a-z0-9]+", "-", q.lower()).strip("-")
+    return [
+        {"store": "official", "label": f"{p.brand} official store", "url": p.url, "exact": True},
+        {"store": "amazon", "label": "Amazon", "url": f"https://www.amazon.in/s?k={quote_plus(q)}", "exact": False},
+        {"store": "flipkart", "label": "Flipkart", "url": f"https://www.flipkart.com/search?q={quote_plus(q)}", "exact": False},
+        {"store": "nykaa", "label": "Nykaa", "url": f"https://www.nykaa.com/search/result/?q={quote_plus(q)}", "exact": False},
+        {"store": "myntra", "label": "Myntra", "url": f"https://www.myntra.com/{quote(slug)}", "exact": False},
+        {"store": "meesho", "label": "Meesho", "url": f"https://www.meesho.com/search?q={quote_plus(q)}", "exact": False},
+        {"store": "purplle", "label": "Purplle", "url": f"https://www.purplle.com/search?q={quote_plus(q)}", "exact": False},
+    ]
+
+
 def product_summary(p: Product, cat: Catalogue) -> dict:
     return {
         "id": p.id, "name": p.name, "brand": p.brand, "category": p.category,
-        "price": p.price, "effective_price": p.effective_price,
-        "on_sale": p.effective_price < p.price, "size": p.size,
-        "rating": p.rating, "reviews": p.reviews, "skin_types": p.skin_types,
-        "families": sorted(p.families), "completeness": p.completeness,
+        "price": p.price, "mrp": p.mrp, "effective_price": p.effective_price,
+        "discount_pct": round(100 * (1 - p.price / p.mrp)) if p.mrp else 0,
+        "size": p.size, "url": p.url, "image": p.image_url, "store": p.store,
+        "in_stock": p.in_stock, "rating": p.rating, "reviews": p.reviews,
+        "skin_types": p.skin_types, "families": sorted(p.families),
+        "completeness": p.completeness, "has_full_list": p.has_full_list,
         "ingredient_count": len(p.ingredient_ids), "key_actives": key_actives(p, cat),
-        "fragrance_free": "fragrance" not in p.families and p.completeness != "missing",
+        "fragrance_free": p.has_full_list and "fragrance" not in p.families,
     }
 
 
@@ -93,7 +118,9 @@ def meta():
     return {
         "products": m["products"], "brands": m["brands"], "ingredients": m["ingredients"],
         "token_match_rate": m["token_match_rate"], "built": m["built"],
-        "price_min": m["price_min"], "price_max": m["price_max"],
+        "price_min": m["price_min"], "price_max": m["price_max"], "price_median": m.get("price_median"),
+        "currency": "INR", "stores": m.get("stores", {}),
+        "brand_counts": dict(sorted(Counter(p.brand for p in cat.products.values()).items())),
         "categories": dict(cat.categories.most_common()),
         "concerns": cat.concerns, "families": cat.families,
         # Products with a targeted active for each concern (strength 1.0).
@@ -103,29 +130,35 @@ def meta():
 
 
 SORTS = {
-    "popular": lambda p: -p.loves,
-    "rating": lambda p: -((p.rating or 0) * math.log10(p.reviews + 1)),
+    # Each brand store's own order, interleaved, with out-of-stock products last.
+    "featured": lambda p: (not p.in_stock, p.featured_rank, p.brand),
     "price_asc": lambda p: p.effective_price,
     "price_desc": lambda p: -p.effective_price,
+    "discount": lambda p: -(1 - p.price / p.mrp if p.mrp else 0),
 }
 
 
 @app.get("/api/products")
 def list_products(
     q: str = "", category: str | None = None, max_price: float | None = Query(None, ge=0),
-    concern: str | None = None, skin_type: str | None = None,
+    concern: str | None = None, skin_type: str | None = None, brand: list[str] = Query(default=[]),
     avoid: list[str] = Query(default=[], description="Ingredient families to exclude"),
-    sort: Literal["popular", "rating", "price_asc", "price_desc", "relevance"] = "popular",
+    sort: Literal["featured", "price_asc", "price_desc", "discount", "relevance"] = "featured",
     page: int = Query(1, ge=1), page_size: int = Query(24, ge=1, le=100),
 ):
     cat = get_catalogue()
+    corrected = None
     if q.strip():
         ids = cat.search_ids(q)
+        if not ids and (corrected := cat.closest_brand(q)):
+            ids = [p.id for p in cat.products.values() if p.brand == corrected]
         items = [cat.products[i] for i in ids]
     else:
         items = list(cat.products.values())
     if category:
         items = [p for p in items if p.category == category]
+    if brand:
+        items = [p for p in items if p.brand in brand]
     if max_price is not None:
         items = [p for p in items if p.effective_price <= max_price]
     if concern:
@@ -133,11 +166,11 @@ def list_products(
     if skin_type:
         items = [p for p in items if skin_type in p.skin_types]
     if avoid:
-        items = [p for p in items if p.completeness != "missing" and not p.families.intersection(avoid)]
+        items = [p for p in items if p.has_full_list and not p.families.intersection(avoid)]
     if sort != "relevance" or not q.strip():
-        items.sort(key=SORTS["popular" if sort == "relevance" else sort])
+        items.sort(key=SORTS["featured" if sort == "relevance" else sort])
     start = (page - 1) * page_size
-    return {"total": len(items), "page": page, "page_size": page_size,
+    return {"total": len(items), "page": page, "page_size": page_size, "corrected_to": corrected,
             "items": [product_summary(p, cat) for p in items[start:start + page_size]]}
 
 
@@ -150,6 +183,7 @@ def get_product(product_id: str):
     return {
         **product_summary(p, cat),
         "claims": p.claims, "unmatched_count": p.unmatched_count,
+        "description": p.description, "variants": p.variants, "shop_links": shop_links(p),
         "concerns": [{"concern": c, "label": cat.concerns[c], "strength": s,
                       "evidence": p.concern_evidence.get(c, [])}
                      for c, s in sorted(p.concern_strength.items(), key=lambda x: -x[1])],
@@ -186,7 +220,7 @@ def get_ingredient(key: str):
     if not i:
         raise HTTPException(404, "Ingredient not found")
     products = [p for p in cat.products.values() if i.id in p.ingredient_id_set]
-    products.sort(key=lambda p: -p.loves)
+    products.sort(key=SORTS["featured"])
     return {**ingredient_summary(i), "family_labels": {f: cat.families[f] for f in i.families},
             "top_products": [product_summary(p, cat) for p in products[:8]]}
 
@@ -197,7 +231,7 @@ class ProfileIn(BaseModel):
     concerns: list[str] = Field(default_factory=list)
     category: str = "any"
     budget_min: float = 0
-    budget_max: float = 50
+    budget_max: float = 1000
     avoid_families: list[str] = Field(default_factory=list)
     avoid_ingredients: list[str] = Field(default_factory=list)
     prefer_ingredients: list[str] = Field(default_factory=list)
@@ -214,7 +248,8 @@ def post_recommend(body: ProfileIn):
     res = recommend(cat, u, explain_top=body.limit)
     return {
         "total": len(cat.products), "eligible": res.eligible_count, "excluded": res.excluded,
-        "results": [{"product": product_summary(s.product, cat), "score": round(s.score, 4),
+        "results": [{"product": {**product_summary(s.product, cat), "shop_links": shop_links(s.product)},
+                     "score": round(s.score, 4),
                      "parts": {k: round(v, 4) for k, v in s.parts.items()},
                      "reasons": s.reasons, "warnings": s.warnings}
                     for s in res.ranked[:body.limit]],

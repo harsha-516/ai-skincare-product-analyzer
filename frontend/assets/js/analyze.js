@@ -1,5 +1,5 @@
 import { api, mountChrome, hydrateIcons, productVisual, icon, esc, num, money,
-  retailerLink, CONCERN_SHORT, FAMILY_SHORT, $, $$, toast } from "./ui.js";
+  priceHTML, shopLinks, CONCERN_SHORT, FAMILY_SHORT, $, $$, toast } from "./ui.js";
 import { loadImage, checkPhoto } from "./image-check.js";
 
 mountChrome();
@@ -19,7 +19,8 @@ const CONCERN_DESC = {
 };
 const FAMILY_ORDER = ["fragrance", "essential_oils", "drying_alcohol", "fragrance_allergens", "sulfates", "parabens",
   "silicones", "comedogenic", "fungal_acne", "pregnancy_caution", "chemical_filters", "strong_actives"];
-const PRESETS = [["Under $20", 0, 20], ["$20 – $50", 20, 50], ["$50 – $100", 50, 100], ["Any price", 0, 1000]];
+const ANY_PRICE = 100000;
+const PRESETS = [["Under ₹500", 0, 500], ["₹500 – ₹1,000", 500, 1000], ["₹1,000 – ₹2,000", 1000, 2000], ["Any price", 0, ANY_PRICE]];
 const SENSITIVE_DEFAULT = ["fragrance", "essential_oils", "drying_alcohol"];
 
 const meta = await api.meta();
@@ -94,7 +95,7 @@ function profile() {
     avoid_families: all("family"), avoid_ingredients: [...avoid.items.keys()], prefer_ingredients: [...prefer.items.keys()],
   };
 }
-const STORE = "skinanalyzer.answers";
+const STORE = "skinanalyzer.answers.inr";
 function onChange() {
   try { sessionStorage.setItem(STORE, JSON.stringify({ ...profile(), avoidNames: [...avoid.items], preferNames: [...prefer.items] })); } catch {}
 }
@@ -197,7 +198,7 @@ drop.addEventListener("drop", (e) => { e.preventDefault(); drop.classList.remove
 // ----------------------------------------------------------------------- results
 const PART = { c: ["Concern match", "35%"], i: ["Preferred ingredients", "25%"], k: ["Skin-type fit", "20%"], b: ["Budget fit", "20%"] };
 const FUNNEL = [["category", "Other categories", "#d8ccbf"], ["budget", "Outside budget", "#c7b6a6"],
-  ["restricted", "Contain something you avoid", "#a85a3f"], ["incomplete", "No ingredient list to check", "#e2c1b1"]];
+  ["restricted", "Contain something you avoid", "#a85a3f"], ["incomplete", "Brand doesn't publish the full ingredient list", "#e2c1b1"]];
 let limit = 5;
 let lastProfile;
 
@@ -210,15 +211,16 @@ function resultCard(r, i, u) {
       <div class="result-top">
         <div><span class="rank-label">${i === 0 ? "Best match" : `Match #${i + 1}`}</span>
           <h3><a href="product.html?id=${encodeURIComponent(p.id)}">${esc(p.name)}</a></h3>
-          <div class="row small muted" style="margin-top:6px;gap:10px">${esc(p.brand)} · ${money(p.effective_price)}${p.rating ? ` · <span class="rating">${icon("star")}<b>${p.rating.toFixed(1)}</b></span>` : ""}</div></div>
+          <div class="row small muted" style="margin-top:6px;gap:10px">${esc(p.brand)}${p.size ? ` · ${esc(p.size)}` : ""}</div>
+          <div class="row" style="margin-top:8px;gap:8px">${priceHTML(p)}</div></div>
         <div class="ring" style="--v:${score};--size:72px"><div><b>${score}</b><small>match</small></div></div>
       </div>
       <ul class="reasons">${r.reasons.map((t) => `<li>${icon("check")}<span>${esc(t)}</span></li>`).join("")}
         ${r.warnings.map((t) => `<li class="warn">${icon("alert")}<span>${esc(t)}</span></li>`).join("")}</ul>
       <div class="bars">${Object.entries(r.parts).map(([k, v]) => `<div><div class="bar-label"><span>${PART[k][0]}</span><b>${Math.round(v * 100)}%</b></div><div class="bar"><i style="width:${v * 100}%"></i></div></div>`).join("")}</div>
-      <div class="row" style="margin-top:18px">
-        <a class="btn btn-sm btn-primary" href="product.html?id=${encodeURIComponent(p.id)}">View ingredients</a>
-        <a class="btn btn-sm" href="${retailerLink(p)}" target="_blank" rel="noopener">Find at retailer ${icon("external")}</a>
+      <div class="row" style="margin-top:18px;align-items:flex-start;gap:16px">
+        ${shopLinks(p, { compact: true })}
+        <a class="btn btn-sm" href="product.html?id=${encodeURIComponent(p.id)}">View details</a>
       </div>
     </div></article>`;
 }
@@ -226,7 +228,7 @@ function resultCard(r, i, u) {
 function summaryTags(u) {
   const t = [`${SKIN.find((s) => s[0] === u.skin_type)[1]} skin`, u.sensitivity === "high" ? "Highly sensitive" : null,
     ...u.concerns.map((c) => CONCERN_SHORT[c]), u.category === "any" ? "Any product type" : u.category,
-    u.budget_max >= 1000 ? "Any price" : `${money(u.budget_min)}–${money(u.budget_max)}`,
+    u.budget_max >= ANY_PRICE ? "Any price" : `${money(u.budget_min)}–${money(u.budget_max)}`,
     ...u.avoid_families.map((f) => `No ${FAMILY_SHORT[f].toLowerCase()}`), ...[...avoid.items.values()].map((n) => `No ${n}`)].filter(Boolean);
   return t.map((x) => `<span class="tag tag-line">${esc(x)}</span>`).join("");
 }
@@ -257,7 +259,7 @@ async function submit(more = false) {
         <div class="funnel-legend">${FUNNEL.filter(([k]) => r.excluded[k]).map(([k, l, c]) => `<span><i style="background:${c}"></i>${num(r.excluded[k])} ${l.toLowerCase()}</span>`).join("")}
           <span><i style="background:var(--sage)"></i>${num(r.eligible)} eligible</span></div>
       </div>
-      ${r.eligible === 0 ? `<div class="card empty"><div class="icon-badge">${icon("filter")}</div><h3>Try loosening a rule</h3><p class="muted small" style="margin-top:6px">Widen your budget, choose “Any type”, or avoid fewer ingredient groups.</p></div>` : ""}
+      ${r.eligible === 0 ? `<div class="card empty"><div class="icon-badge">${icon("filter")}</div><h3>Try loosening a rule</h3><p class="muted small" style="margin-top:6px">Widen your budget, choose “Any type”, or avoid fewer ingredient groups. Avoid rules only keep products whose brand publishes the full ingredient list.</p></div>` : ""}
       <div id="result-list">${r.results.map((x, i) => resultCard(x, i, u)).join("")}</div>
       ${r.eligible > r.results.length ? `<div class="row" style="justify-content:center;margin-top:28px"><button class="btn" id="more">Show 5 more matches</button></div>` : ""}
       <div class="notice" style="margin-top:32px">${icon("info")}<span>Results are informational guidance based on ingredient lists, retailer labels and your answers, not a diagnosis.

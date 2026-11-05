@@ -1,18 +1,19 @@
 # SkinAnalyzer: AI Skincare Product Analyzer
 
-An ingredient-aware skincare recommender. You give it your skin type, sensitivity, concerns, budget, the product type
-you want and the ingredients you avoid. Products that break any of your rules are removed **before** scoring. The rest
-are ranked with a weighted compatibility score, and every recommendation explains in plain language why it was chosen.
+An ingredient-aware skincare recommender for India. You give it your skin type, sensitivity,
+concerns, budget in rupees, the product type you want and the ingredients you avoid. Products
+that break any of your rules are removed **before** scoring. The rest are ranked with a weighted
+compatibility score, and every recommendation explains in plain language why it was chosen, with
+a link to the exact product on the brand's official store and buttons to compare it on Amazon,
+Flipkart, Nykaa, Myntra, Meesho and Purplle.
 
 > Informational guidance only. It is not a medical diagnosis and does not promise that a product will suit you.
 
-| | |
-|---|---|
-| Products | **1,829** face-care products from 127 brands, with prices, ratings and full ingredient lists |
-| Ingredients | **3,626** distinct ingredients, **98.4%** of ingredient tokens matched to the EU CosIng database |
-| Rule violations | **0%** across 20 test personas (a plain "most loved" list breaks the rules 48% of the time) |
-| Ranking | Precision@5 **0.61**, against 0.40 for popularity and 0.37 for random |
-| Explanations | **100%** of results show at least three plain-language reasons |
+**Products:** real face-care products from Indian brands' official online stores (Minimalist,
+The Derma Co, Dr. Sheth's, Dot & Key, Pilgrim, Plum, Foxtale, Re'equil, Deconstruct, mCaffeine,
+Hyphen and more), with INR prices, MRP, sizes, photos and product links. See
+[`report/data_audit.md`](report/data_audit.md) for the current counts and
+[`data/SOURCES.md`](data/SOURCES.md) for how the data is collected.
 
 ## Architecture
 
@@ -44,8 +45,9 @@ are ranked with a weighted compatibility score, and every recommendation explain
 
 * **C, concern match:** for each chosen concern, the strongest matching ingredient. 1.0 for a targeted active
   (for example niacinamide or salicylic acid), 0.5 for a supporting ingredient (for example glycerin or aloe).
+  Uses the full ingredient list when the brand publishes one, otherwise the actives named on the product.
 * **I, preferred ingredients:** the share of the user's preferred ingredients that the product contains.
-* **K, skin-type fit:** the retailer's "Best for … skin" label. 1 if it matches, 0.2 if not, 0.5 if there is no label.
+* **K, skin-type fit:** the brand's own skin-type tag on its store. 1 if it matches, 0.2 if not, 0.5 if there is no tag.
 * **B, budget fit:** `1 − 0.6 × (price − min) / (max − min)`.
 * A component the user left blank is dropped, and the other weights are renormalised.
 
@@ -60,10 +62,11 @@ uvicorn backend.app.main:app --reload
 
 Open http://localhost:8000. The API docs are at http://localhost:8000/api/docs.
 
-### Rebuild the data, evaluation and tests
+### Refresh prices, rebuild the data, evaluation and tests
 
 ```bash
-python pipeline/build_data.py   # raw CSVs → data/skincare.db, data/processed/*.csv, report/data_audit.md
+python pipeline/fetch_brands.py # brand stores → data/raw/brands/ (polite: about 20–40 minutes)
+python pipeline/build_data.py   # raw data → data/skincare.db, data/processed/*.csv, report/data_audit.md
 python eval/run_eval.py         # 20 personas → report/evaluation.md, report/evaluation.json
 python -m pytest                # API and recommender tests
 ```
@@ -80,13 +83,16 @@ To host the frontend on a different domain from the API, set `ALLOWED_ORIGINS` (
 
 ## Data (all real and public)
 
-| Dataset | Used for | Source and licence |
+| Data | Used for | Source |
 |---|---|---|
-| Sephora Products and Skincare Reviews (Kaggle, user nadyinky, scraped March 2023) | Products, prices, ratings, labels, ingredient lists | [Hugging Face mirror](https://huggingface.co/datasets/eyachawechi/my-sephora-data). Check the Kaggle page for the original licence |
+| Brands' official Indian stores | Products, ₹ prices, MRP, sizes, photos, product links, skin-type and concern tags, published ingredient lists | Public Shopify catalogue feeds and product pages, collected politely after checking robots.txt (`pipeline/fetch_brands.py`) |
 | EU CosIng ingredient inventory | INCI names, functions, Annex restrictions | European Commission; reuse permitted under Decision 2011/833/EU. [Mirror](https://huggingface.co/datasets/nad949/CosIng) |
 | Indian Skincare Ingredient Flags (CureSkin, 2026) | Pore-clogging ratings, fungal-acne triggers, fragrance allergens, alcohol type, pregnancy caution | [CC BY 4.0](https://huggingface.co/datasets/cureskin/indian-skincare-ingredient-flags) |
 
-The raw files are kept unchanged in `data/raw/`. See [`data/SOURCES.md`](data/SOURCES.md) for checksums.
+**Marketplace prices.** Amazon, Flipkart, Myntra, Meesho and Nykaa don't permit automated
+collection of their prices, so the site links to a search for each product on those stores instead.
+Real cross-store price comparison needs their official partner APIs (Amazon Product Advertising
+API, Flipkart Affiliate API), which need an approved affiliate account.
 
 ## Repository layout
 
@@ -94,8 +100,9 @@ The raw files are kept unchanged in `data/raw/`. See [`data/SOURCES.md`](data/SO
 backend/app/        FastAPI app: catalogue.py, recommender.py, main.py
 backend/tests/      API and recommender tests (pytest)
 frontend/           website: HTML pages, assets/css/app.css, assets/js/*.js
-pipeline/           build_data.py (clean, match, tag), reference.py (synonyms, actives, families), database.py (schema)
-data/raw/           unchanged source datasets
+pipeline/           fetch_brands.py (collect), sources.py (brand data), build_data.py (clean, match, tag),
+                    reference.py (synonyms, actives, families), database.py (schema)
+data/raw/           brand-store snapshots (brands/) and the two ingredient references
 data/processed/     clean product and ingredient tables (CSV)
 data/skincare.db    SQLite database used by the backend
 eval/               20 test personas and the evaluation script
@@ -108,9 +115,10 @@ report/             mid-term report (PDF), data audit, evaluation results, 50-pr
 * [`report/data_audit.md`](report/data_audit.md): product table and ingredient matching (objectives O2 and O3)
 * [`report/evaluation.md`](report/evaluation.md): rule violations, Precision/Recall/NDCG@5, baselines, ablations, weight sensitivity (O4–O6)
 
-**Known limitations.** The relevance labels used in evaluation are the retailer's "Good for" tags, so they are weak
-labels. Prices are 2023 Sephora US list prices in USD, not live prices. Skin estimates from photos (the CNN in
-Module 2) are not trained yet, so recommendations use the questionnaire only.
+**Known limitations.** Many Indian brands don't publish full ingredient lists online. Those products are matched to
+concerns through the actives they name, and are left out whenever you set an ingredient restriction. Prices are a
+snapshot from each brand's store on the fetch date. The relevance labels used in evaluation are the brands' own
+store tags, so they are weak labels. Skin estimates from photos (the CNN in Module 2) are not trained yet.
 
 ## Licence
 

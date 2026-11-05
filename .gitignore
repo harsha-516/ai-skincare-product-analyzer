@@ -7,3 +7,4 @@ Thumbs.db
 .claude/
 .pytest_cache/
 data/*.tmp
+.tmp_pages/

@@ -17,21 +17,23 @@
   <section class="page-hero">
     <span class="eyebrow">Product catalogue</span>
     <h1 id="page-title">Every product, decoded</h1>
-    <p class="lead">Filter by what your skin needs and what it can't stand. Each product shows its key actives, its flagged
-      ingredients and its full ingredient list.</p>
+    <p class="lead">Real products from India's skincare brands, with prices from each brand's official store. Filter by brand,
+      concern, skin type, price and the ingredients you avoid.</p>
   </section>
 
   <div class="catalogue">
     <aside class="filters" id="filters" aria-label="Filters">
       <div class="filters-mobile-head"><h3>Filters</h3><button class="btn btn-ghost btn-icon" id="close-filters" aria-label="Close filters"><span data-icon="x"></span></button></div>
+      <div><h4>Brand</h4><div class="filter-list" id="f-brand"></div></div>
       <div><h4>Category</h4><div class="filter-list" id="f-category"></div></div>
       <div><h4>Concern</h4><div class="filter-list" id="f-concern"></div></div>
       <div><h4>Skin type</h4><div class="filter-list" id="f-skin"></div></div>
       <div><h4>Max price</h4>
-        <input type="range" id="f-price" min="5" max="150" step="5" value="150" aria-label="Maximum price">
-        <div class="row small muted" style="justify-content:space-between;margin-top:6px"><span>$5</span><span>Up to <span class="range-out" id="price-out">any price</span></span></div>
+        <input type="range" id="f-price" min="100" max="3000" step="50" value="3000" aria-label="Maximum price">
+        <div class="row small muted" style="justify-content:space-between;margin-top:6px"><span>₹100</span><span>Up to <span class="range-out" id="price-out">any price</span></span></div>
       </div>
-      <div><h4>Free from</h4><div class="filter-list" id="f-avoid"></div></div>
+      <div><h4>Free from</h4><div class="filter-list" id="f-avoid"></div>
+        <p class="xs subtle" style="margin-top:8px">Only products whose brand publishes the full ingredient list can be checked.</p></div>
       <button class="btn btn-sm" id="clear">Clear all filters</button>
     </aside>
 
@@ -42,10 +44,10 @@
           <input class="input" id="q" type="search" placeholder="Search products, brands or ingredients" autocomplete="off"></label>
         <label class="sr-only" for="sort">Sort by</label>
         <select class="select" id="sort">
-          <option value="popular">Most loved</option>
-          <option value="rating">Top rated</option>
+          <option value="featured">Featured</option>
           <option value="price_asc">Price: low to high</option>
           <option value="price_desc">Price: high to low</option>
+          <option value="discount">Biggest discount</option>
           <option value="relevance">Best match for search</option>
         </select>
       </div>
@@ -55,8 +57,8 @@
       </div>
       <div class="product-grid" id="grid"></div>
       <nav class="pagination" id="pagination" aria-label="Pages"></nav>
-      <div class="notice" style="margin-top:40px"><span data-icon="info"></span><span>Prices are retailer list prices in US dollars at the time
-        the catalogue was collected, not live prices. Ingredient lists can change between batches, so check the label too.</span></div>
+      <div class="notice" style="margin-top:40px"><span data-icon="info"></span><span>Prices are from each brand's official store on the date shown on
+        the product page, and can change. Use "Compare on" to check Amazon, Flipkart, Nykaa, Myntra, Meesho and Purplle before you buy.</span></div>
     </div>
   </div>
 </main>

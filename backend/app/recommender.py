@@ -27,8 +27,8 @@ class Profile:
     sensitivity: str = "low"
     concerns: list[str] = field(default_factory=list)
     category: str = "any"
-    budget_min: float = 0
-    budget_max: float = 50
+    budget_min: float = 0        # INR
+    budget_max: float = 1000     # INR
     avoid_families: list[str] = field(default_factory=list)
     avoid_ingredients: list[str] = field(default_factory=list)   # ingredient keys
     prefer_ingredients: list[str] = field(default_factory=list)  # ingredient keys
@@ -88,12 +88,13 @@ def exclusion_reason(p: Product, u: Profile, cat: Catalogue) -> str | None:
     if not (u.budget_min <= p.effective_price <= u.budget_max):
         return "budget"
     if u.avoid_families or u.avoid_ingredients:
-        # A restriction cannot be checked on a missing ingredient list.
-        if p.completeness == "missing":
+        # A restriction can only be checked against a full ingredient list.
+        if not p.has_full_list:
             return "incomplete"
         if p.families.intersection(u.avoid_families):
             return "restricted"
-        avoid_ids = {cat.by_key[k].id for k in u.avoid_ingredients}
+        # An ingredient missing from the vocabulary is in no product list, so it can't match.
+        avoid_ids = {cat.by_key[k].id for k in u.avoid_ingredients if k in cat.by_key}
         if avoid_ids & p.ingredient_id_set:
             return "restricted"
     return None
@@ -105,8 +106,8 @@ def component_scores(p: Product, u: Profile, cat: Catalogue) -> dict[str, float]
         parts["c"] = sum(p.concern_strength.get(c, 0) for c in u.concerns) / len(u.concerns)
     if u.prefer_ingredients:
         ids = p.ingredient_id_set
-        parts["i"] = sum(cat.by_key[k].id in ids for k in u.prefer_ingredients) / len(
-            u.prefer_ingredients)
+        parts["i"] = sum(k in cat.by_key and cat.by_key[k].id in ids
+                         for k in u.prefer_ingredients) / len(u.prefer_ingredients)
     if not p.skin_types or u.skin_type == "unsure":
         parts["k"] = 0.5
     else:
@@ -122,11 +123,19 @@ def combine(parts: dict[str, float], weights: dict[str, float] = DEFAULT_WEIGHTS
 
 
 def popularity(p: Product) -> float:
-    return (p.rating or 0) * math.log10(p.reviews + 1)
+    """Tie-breaker: rating when known, then the brand store's own featured order."""
+    return (p.rating or 0) * math.log10(p.reviews + 1) - p.featured_rank / 1000
 
 
 def _money(v: float) -> str:
-    return f"${v:.0f}" if float(v).is_integer() else f"${v:.2f}"
+    """Indian rupee format: ₹1,299 or ₹1,29,999."""
+    v = round(v)
+    s = str(int(v))
+    if len(s) > 3:
+        head, tail = s[:-3], s[-3:]
+        head = ",".join([head[max(0, i - 2):i] for i in range(len(head), 0, -2)][::-1])
+        s = f"{head},{tail}"
+    return f"₹{s}"
 
 
 def _join(xs: list[str]) -> str:
@@ -137,34 +146,44 @@ def explain(p: Product, u: Profile, cat: Catalogue) -> tuple[list[str], list[str
     reasons, warnings = [], []
     where = f"A {p.category.lower()}, as you asked," if u.category != "any" else \
         f"A {p.category.lower()}"
-    reasons.append(f"{where} at {_money(p.effective_price)}, inside your "
-                   f"{_money(u.budget_min)}–{_money(u.budget_max)} budget.")
+    reasons.append(f"{where} at {_money(p.effective_price)} on {p.brand}'s official store, "
+                   f"inside your {_money(u.budget_min)}–{_money(u.budget_max)} budget.")
+    if p.mrp and p.mrp > p.price:
+        reasons.append(f"{round(100 * (1 - p.price / p.mrp))}% off the MRP of {_money(p.mrp)}.")
     for c in u.concerns:
         label = cat.concerns[c].lower()
         ev = p.concern_evidence.get(c)
         if ev:
-            reasons.append(f"For {label}: contains {_join(ev[:3])}.")
+            how = "contains" if p.has_full_list else "made with"
+            reasons.append(f"For {label}: {how} {_join(ev[:3])}.")
         else:
             warnings.append(f"Nothing in the ingredient list is matched to {label}.")
     if u.prefer_ingredients:
         ids = p.ingredient_id_set
-        hit = [cat.by_key[k].name for k in u.prefer_ingredients if cat.by_key[k].id in ids]
+        hit = [cat.by_key[k].name for k in u.prefer_ingredients
+               if k in cat.by_key and cat.by_key[k].id in ids]
         if hit:
             reasons.append(f"Contains {_join(hit)}, which you said you prefer.")
     avoided = [cat.families[f].lower() for f in u.avoid_families] + \
-              [cat.by_key[k].name for k in u.avoid_ingredients]
+              [cat.by_key[k].name if k in cat.by_key else k for k in u.avoid_ingredients]
     if avoided:
         reasons.append(f"Free of what you asked to avoid: {_join(avoided)}.")
         if p.completeness == "partial":
             warnings.append("Part of this ingredient list could not be matched, so double-check "
                             "the label.")
+    tagged = [cat.concerns[c].lower() for c in u.concerns if c in p.retailer_good_for]
+    if tagged:
+        reasons.append(f"{p.brand} recommends it for {_join(tagged)}.")
     if p.skin_types and u.skin_type != "unsure":
         if u.skin_type in p.skin_types:
-            reasons.append(f"The retailer lists it for {_join(p.skin_types)} skin, "
+            reasons.append(f"{p.brand} lists it for {_join(p.skin_types)} skin, "
                            "which includes yours.")
         else:
-            warnings.append(f"The retailer lists it for {_join(p.skin_types)} skin, "
+            warnings.append(f"{p.brand} lists it for {_join(p.skin_types)} skin, "
                             f"not {u.skin_type}.")
+    if not p.has_full_list and not avoided:
+        warnings.append("The brand does not publish the full ingredient list online, so check "
+                        "the label for anything you react to.")
     if p.rating and p.reviews >= 20:
         reasons.append(f"Rated {p.rating:.1f} out of 5 from {p.reviews:,} reviews.")
     if "pregnancy_caution" not in u.avoid_families and "pregnancy_caution" in p.families:
@@ -185,7 +204,9 @@ def recommend(cat: Catalogue, u: Profile, *, weights: dict[str, float] = DEFAULT
             continue
         parts = component_scores(p, u, cat)
         scored.append(Scored(p, parts, combine(parts, weights)))
-    scored.sort(key=lambda s: (-s.score, -popularity(s.product), s.product.id))
+    # Equal scores: in-stock first, then rating / the brand store's featured order.
+    scored.sort(key=lambda s: (-s.score, not s.product.in_stock, -popularity(s.product),
+                               s.product.id))
     for s in scored[:explain_top]:
         s.reasons, s.warnings = explain(s.product, u, cat)
     return Result(scored, len(scored), excluded)

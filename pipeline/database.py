@@ -52,23 +52,30 @@ CREATE TABLE ingredient_concerns (
 );
 
 CREATE TABLE products (
-    id               TEXT PRIMARY KEY,
+    id               TEXT PRIMARY KEY,           -- <store>-<shopify product id>
     name             TEXT NOT NULL,
     brand            TEXT NOT NULL,
     category         TEXT NOT NULL,
-    source_category  TEXT NOT NULL DEFAULT '',
-    price_usd        REAL NOT NULL,
-    sale_price_usd   REAL,
-    effective_price  REAL NOT NULL,              -- sale price when lower, else list price
+    source_category  TEXT NOT NULL DEFAULT '',   -- the store's own product type
+    price_inr        REAL NOT NULL,              -- lowest in-stock variant on the brand store
+    mrp_inr          REAL,                       -- compare-at price, when higher than price
+    effective_price  REAL NOT NULL,              -- = price_inr (kept for filters and sorting)
     size             TEXT NOT NULL DEFAULT '',
-    rating           REAL,
+    url              TEXT NOT NULL,              -- exact product page on the brand store
+    image_url        TEXT NOT NULL DEFAULT '',
+    store            TEXT NOT NULL,              -- store domain
+    in_stock         INTEGER NOT NULL DEFAULT 1,
+    variants         TEXT NOT NULL DEFAULT '[]', -- JSON [{title, price}]
+    description      TEXT NOT NULL DEFAULT '',
+    featured_rank    INTEGER NOT NULL DEFAULT 0, -- position in the brand store's own listing
+    rating           REAL,                       -- not published by brand stores yet
     reviews          INTEGER NOT NULL DEFAULT 0,
-    loves            INTEGER NOT NULL DEFAULT 0,
-    completeness     TEXT NOT NULL CHECK (completeness IN ('complete', 'partial', 'missing')),
+    completeness     TEXT NOT NULL CHECK (completeness IN ('complete', 'partial', 'actives', 'missing')),
     unmatched_count  INTEGER NOT NULL DEFAULT 0,
-    skin_types       TEXT NOT NULL DEFAULT '[]', -- JSON list, retailer "Best for" label
-    retailer_good_for TEXT NOT NULL DEFAULT '[]',-- JSON list, retailer "Good for" tags
-    claims           TEXT NOT NULL DEFAULT '[]'  -- JSON list, e.g. "Fragrance Free"
+    skin_types       TEXT NOT NULL DEFAULT '[]', -- JSON, from the brand's store tags
+    retailer_good_for TEXT NOT NULL DEFAULT '[]',-- JSON, concern tags from the brand's store
+    claims           TEXT NOT NULL DEFAULT '[]', -- JSON, e.g. "Fragrance Free"
+    fetched          TEXT NOT NULL DEFAULT ''    -- date the store was read
 );
 CREATE INDEX idx_products_category ON products(category);
 CREATE INDEX idx_products_price ON products(effective_price);
@@ -132,15 +139,15 @@ def write_database(path: Path, rows, families_per_product, evidence_per_product,
 
         for p, fams, ev, cs in zip(rows, families_per_product, evidence_per_product,
                                    strength_per_product):
-            sale = p["sale_price_usd"]
-            effective = sale if sale and 0 < sale < p["price_usd"] else p["price_usd"]
             con.execute(
-                "INSERT INTO products VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO products VALUES "
+                "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (p["id"], p["name"], p["brand"], p["category"], p["source_category"] or "",
-                 p["price_usd"], sale, effective, p["size"], p["rating"], p["reviews"],
-                 p["loves"], p["completeness"], len(p["unmatched"]),
+                 p["price"], p["mrp"], p["price"], p["size"], p["url"], p["image"], p["store"],
+                 int(p["in_stock"]), json.dumps(p["variants"]), p["description"],
+                 p["featured_rank"], None, 0, p["completeness"], len(p["unmatched"]),
                  json.dumps(p["skin_types"]), json.dumps(p["retailer_good_for"]),
-                 json.dumps(p["claims"])))
+                 json.dumps(p["claims"]), p["fetched"]))
             matched = [k for k in p["ingredients"] if k in ing_id]
             con.executemany("INSERT INTO product_ingredients VALUES (?, ?, ?)",
                             [(p["id"], ing_id[k], pos) for pos, k in enumerate(matched)])
@@ -149,9 +156,13 @@ def write_database(path: Path, rows, families_per_product, evidence_per_product,
             con.executemany(
                 "INSERT INTO product_concerns VALUES (?, ?, ?, ?)",
                 [(p["id"], c, cs[c], json.dumps(list(dict.fromkeys(ev[c]))[:4])) for c in cs])
+            # Brand aliases so "dermaco", "thedermaco" or "drsheths" also match.
+            compact = "".join(ch for ch in p["brand"].lower() if ch.isalnum())
+            aliases = {compact, compact.removeprefix("the"), compact.removesuffix("s")}
+            active_names = " ".join(n for n, _ in p.get("named_actives", []))
             con.execute("INSERT INTO products_fts VALUES (?, ?, ?, ?)",
-                        (p["id"], p["name"], p["brand"],
-                         " ".join(names[k] for k in matched)))
+                        (p["id"], p["name"], f"{p['brand']} {' '.join(sorted(aliases))}",
+                         f"{' '.join(names[k] for k in matched)} {active_names}"))
         con.commit()
         con.execute("VACUUM")
     finally:

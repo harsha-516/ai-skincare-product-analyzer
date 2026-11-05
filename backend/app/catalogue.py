@@ -19,8 +19,12 @@ def connect(path: Path = DB_PATH) -> sqlite3.Connection:
     if not path.exists():
         raise FileNotFoundError(
             f"{path} not found. Build it with:  python pipeline/build_data.py")
-    # Read-only, so a running server can never modify the database.
-    con = sqlite3.connect(f"file:{path.as_posix()}?mode=ro", uri=True, check_same_thread=False)
+    # Copy the read-only database into memory and close the file, so the pipeline can rebuild
+    # data/skincare.db while the server runs (restart the server to load the new data).
+    disk = sqlite3.connect(f"file:{path.as_posix()}?mode=ro", uri=True)
+    con = sqlite3.connect(":memory:", check_same_thread=False)
+    disk.backup(con)
+    disk.close()
     con.row_factory = sqlite3.Row
     return con
 
@@ -45,14 +49,20 @@ class Product:
     name: str
     brand: str
     category: str
-    price: float
-    sale_price: float | None
+    price: float                 # INR, lowest in-stock size on the brand store
+    mrp: float | None            # INR, when the store shows a higher MRP
     effective_price: float
     size: str
+    url: str                     # exact product page on the brand's official store
+    image_url: str
+    store: str
+    in_stock: bool
+    variants: list[dict]
+    description: str
+    featured_rank: int
     rating: float | None
     reviews: int
-    loves: int
-    completeness: str
+    completeness: str            # complete | partial | actives | missing
     unmatched_count: int
     skin_types: list[str]
     retailer_good_for: list[str]
@@ -61,6 +71,10 @@ class Product:
     families: set[str] = field(default_factory=set)
     concern_strength: dict[str, float] = field(default_factory=dict)
     concern_evidence: dict[str, list[str]] = field(default_factory=dict)
+
+    @property
+    def has_full_list(self) -> bool:
+        return self.completeness in ("complete", "partial")
 
     @cached_property
     def ingredient_id_set(self) -> frozenset[int]:
@@ -88,9 +102,11 @@ class Catalogue:
         self.products: dict[str, Product] = {}
         for r in con.execute("SELECT * FROM products"):
             self.products[r["id"]] = Product(
-                r["id"], r["name"], r["brand"], r["category"], r["price_usd"],
-                r["sale_price_usd"], r["effective_price"], r["size"], r["rating"], r["reviews"],
-                r["loves"], r["completeness"], r["unmatched_count"], json.loads(r["skin_types"]),
+                r["id"], r["name"], r["brand"], r["category"], r["price_inr"], r["mrp_inr"],
+                r["effective_price"], r["size"], r["url"], r["image_url"], r["store"],
+                bool(r["in_stock"]), json.loads(r["variants"]), r["description"],
+                r["featured_rank"], r["rating"], r["reviews"], r["completeness"],
+                r["unmatched_count"], json.loads(r["skin_types"]),
                 json.loads(r["retailer_good_for"]), json.loads(r["claims"]))
         for r in con.execute("SELECT * FROM product_ingredients ORDER BY product_id, position"):
             self.products[r["product_id"]].ingredient_ids.append(r["ingredient_id"])
@@ -129,7 +145,8 @@ class Catalogue:
         return out[:k]
 
     def search_ids(self, q: str) -> list[str]:
-        """Full-text search over name, brand and ingredient names (prefix match per word)."""
+        """Full-text search over name, brand (with aliases) and ingredient names, prefix match
+        per word."""
         words = [w for w in "".join(ch if ch.isalnum() else " " for ch in q.lower()).split() if w]
         if not words:
             return []
@@ -138,6 +155,21 @@ class Catalogue:
             "SELECT product_id FROM products_fts WHERE products_fts MATCH ? ORDER BY rank",
             (expr,)).fetchall()
         return [r["product_id"] for r in rows]
+
+    def closest_brand(self, q: str) -> str | None:
+        """Spelling fallback for brand searches, e.g. "domaco" -> "The Derma Co"."""
+        from rapidfuzz import fuzz
+
+        target = "".join(ch for ch in q.lower() if ch.isalnum())
+        if len(target) < 3:
+            return None
+        best, score = None, 0.0
+        for brand in {p.brand for p in self.products.values()}:
+            compact = "".join(ch for ch in brand.lower() if ch.isalnum())
+            s = max(fuzz.ratio(target, compact), fuzz.ratio(target, compact.removeprefix("the")))
+            if s > score:
+                best, score = brand, s
+        return best if score >= 70 else None
 
 
 _catalogue: Catalogue | None = None
